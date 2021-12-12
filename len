@@ -1,0 +1,40 @@
+#!/bin/bash
+source /home/fabian/misc/sane
+# maybe TODO: handle fullwith characters (e.g. み) ("wc" also fails at this)
+
+if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
+ wrap "Counts characters in a string. Like \"wc -m\", but without counting escape sequences."
+ wrap "Only the longest line length will be returned, in case of line breaks or multiple arguments."
+ wrap "Example usage:"
+ echo "len \"a\\\\nbcd\\\\ne f\" \"ghij\\\\ng\\\\e[101mh\\\\e[0mi\""
+ echo "Output:"
+ len "a\nbcd\ne f" "ghij\ng\e[101mh\e[0mi"
+ wrap "Here the length of the line \"ghij\" was returned."
+ exit
+fi
+max=0
+# split arguments and on \n, but not on spaces, loop over lines
+IFS=$'\n'
+for line in $(echo "$*"); do
+ arr=($(echo -n "$line" | sed "s/(.)/\\1\\n/g"))
+ esc=0
+ for((pos=0; pos<${#arr[@]}; pos++)); do
+  # "\em"…
+  if [[ "${arr[pos]}" == $'\e' ]]; then
+   ((esc+=2))
+   ((pos++))
+   # "\e[m"…
+   if [[ "${arr[pos]}" == "[" ]]; then
+    ((esc++))
+    ((pos++))
+    # "\e[0m"…/"\e[93m"…/"\e[101m"…
+    while [[ "${arr[pos]}" =~ [0-9] ]]; do
+     ((esc++))
+     ((pos++))
+    done
+   fi
+  fi
+ done
+ ((max=${#arr[@]}-esc>max?${#arr[@]}-esc:max))
+done
+echo $max
