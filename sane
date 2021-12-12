@@ -1,0 +1,5 @@
+#!/bin/bash
+export PATH="/home/fabian/misc:$PATH"
+shopt -s expand_aliases
+alias echo="echo -e"
+alias sed="sed -E"
