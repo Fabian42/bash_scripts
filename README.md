@@ -24,5 +24,5 @@ Contents so far:
 * `notepad.sh`: Opens Notepad++ without Windows' awful font blurring and focuses the window.
 These are all executable files, despite most missing the "`.sh`" extension. The file names are kept short so that they can be used just like regular commands in a console or script, by having my `~/misc` folder in the `PATH` environment variable.
 
-TODO: move "`TODO`"s into GitHub issues that are currently spread throughout the scripts
+TODO: move "`TODO`"s into GitHub issues that are currently spread throughout the scripts  
 TODO: document dependencies
