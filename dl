@@ -1,0 +1,82 @@
+#!/bin/bash
+source /home/fabian/misc/sane
+wl_id=$(cat /home/fabian/misc/wl_id.txt)
+tm_id=$(cat /home/fabian/misc/tm_id.txt)
+yt_pw=$(cat /home/fabian/misc/yt_pw.txt)
+
+if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
+ wrap "WARNING: This script is currently getting refactored. This help text is ahead of development."
+ wrap "Downloads something using youtube-dlp."
+ echo "Usage:"
+ tablewrap "dl [-[-]|/](h[elp]|?)" "Shows this help."\
+           "dl [m|r|\e[3mINDEX\e[0m]…" "Downloads WL into Downloads or, with \"m\", temp_music into t."\
+           "dl [m|n|r]… (\e[3mFILE\e[0m|\e[3mURL\e[0m [m|n|r|\e[3mINDEX\e[0m]…)…" "Downloads all \e[3mURL\e[0ms listed as arguments or in \e[3mFILE\e[0ms with yt-dlp."
+ echo
+ wrap "An \"m\" causes this entry to be downloaded as audio only and converted to MP3. If \"m\" occurs at the beginning, this applies to all of them."
+ wrap "An \"n\" at the beginning causes all entries to be numbered together, so all files produced by the first entry get a \"0001\" prefix, all files produced by the second entry get a \"0002\" prefix, etc.. After an entry, \"n\" causes all lines in that \e[3mFILE\e[0m to be similarly numbered together (or everything from that \e[3mURL\e[0m to get a \"0001\" prefix for no reason)."
+ wrap "An \"r\" causes this entry (or all, if at the beginning) to ignore the 1080p limit. Otherwise 2K/4K/… videos are downloaded in 1080p instead, if possible."
+ wrap "If both \"m\" and \"r\" are specified, \"m\" takes precedence."
+ wrap "One number can be specified as a start index, a second one as an end index. Those indices are line numbers if the entry is a file and a playlist index if it is an URL. A third and further numbers do nothing."
+ wrap "Each line in a \e[3mFILE\e[0m works just like another \"dl\" command, so for example an empty line downloads WL. But the usual usecase is just a list of links. Lines starting with a usual comment indicator are skipped. Run \"dl --comments\" for a full list."
+ wrap "Do specify a file named \"m\", \"n\" or \"r\", use a path: \"./m\""
+ wrap "Behaviour summary: \e[3mFILE\e[0ms get expanded until only \e[3mURL\e[0ms are left, \"m\" and \"r\" get passed along, \"n\" gets applied only in the current command."
+ wrap "The script tries to be smart. For example all folders in \$CDPATH are searched and IDs instead of full URLs often work."
+ echo
+ wrap "English, German and Japanese non-automatic subtitles are included in video downloads."
+ wrap "yt-dlp and FFMPEG are both set to silent except for the progress indicator, in the ideal case the only output left at the end are success messages from the script. Errors and some warnings will still appear."
+ echo
+ wrap "Examples:"
+ tablewrap "dl" "Downloads the entire WL playlist into ~/Downloads. Already downloaded tracks are skipped, as usual."\
+           "dl m 4" "Downloads the temp_music playlist as MP3 into t, skipping the first three tracks."\
+           "dl https://www.youtube.com/watch?v=lXMskKTw3Bc" "Downloads that video."\
+           "dl r list.txt 2 4 \"enL2Z05WhTU\" m '_qJHEPecdvg'" "Downloads videos from lines 2, 3 and 4 of file \"list.txt\" and the YouTube video with the ID \"_qJHEPecdvg\" at maximum resolution and the YouTube video with the ID \"_qJHEPecdvg\" as MP3."\
+           "dl LL 42 m 69 3141 k3RKPyJPMOY r" "Downloads videos 42 to 69 from the liked videos playlist as MP3 and then the video with the ID \"k3RKPyJPMOY\" in maximum resolution."
+ echo
+ wrap "Current contents of ~/.config/yt-dlp/config:"
+ cat ~/.config/yt-dlp/config
+ echo
+ exit
+elif [[ "$1" == "--comments" ]]; then
+ wrap "All lines in a given file are skipped that begin with any amount (including none) of whitespace and then one of these:"
+ echo "#"
+ echo "/"
+ echo "\\"
+ echo "*"
+ echo ";"
+ echo "%"
+ echo "\!"
+ echo "|"
+ echo "("
+ echo "{"
+ echo "="
+ echo "¢"
+ echo "£"
+ echo "⍝"
+ echo "::"
+ echo "<#"
+ echo "\$\!"
+ echo "\$\$"
+ echo "{-"
+ echo "@c"
+ echo "@C"
+ echo "R:"
+ echo "r:"
+ echo "NB."
+ echo "Nb."
+ echo "nB."
+ echo "nb."
+ echo "\'\'\'"
+ echo "\"\"\""
+ echo "\<\!--"
+ echo "--[["
+ echo "--[="
+ wrap "Multi-line comments are not supported (prefixes like /* still just apply to that one line). Closing of e.g. HTML comments is not necessary."
+ wrap "Comments starting with REM, -- and a few others are not supported because YouTube IDs could start with those. Comments starting with \" or ' are not supported because they can be used to prevent word splitting."
+ exit
+fi
+
+### MAIN PART START
+# print start time only for initial call in recursion
+if [[ "$dl_time_printed" == "" ]]; then date "+%H:%M:%S"; export dl_time_printed=1; fi
+# preparation for later looking up files in all CDPATH locations
+if [[ "$CDPATH" == "" ]]; then CDPATH="."; fi

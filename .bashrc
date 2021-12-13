@@ -1,0 +1,1 @@
+/home/fabian/hdd/d/data/misc/.bashrc

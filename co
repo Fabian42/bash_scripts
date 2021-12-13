@@ -1,0 +1,105 @@
+#!/bin/bash
+source /home/fabian/misc/sane
+# Feedback: fabianroeling@googlemail.com
+# maybe TODO for reliability & less effort: translate into Google Sheets script?
+
+worldometers(){
+ # $1 is the end of the URL to retrieve
+ # $2 is the number of leading rows to remove for alignment of all tables
+ # download page, find series name on website, get number list ("data"), remove prefix, remove suffix, "null"→"0", negatives→0, split on commas, align to 2021-04-17
+ wget -qO - "worldometers.info/coronavirus$1" | grep -im 1 --after-context=5 "name: 'Currently infected'" | grep "data" | sed "s/ *data\\: \\[//" | sed "s/\\] *\\} *\\]? *\\,? *\\{? *//" | sed "s/null/0/g" | sed "s/\\-[0-9]+/0/g" | sed "s/\\,/\\n/g" | tail -n +$2
+}
+
+z(){
+ read a;
+ if [[ "$a" == "q" ]]; then
+  exit 1
+ fi
+}
+
+### START
+# open sheet
+(firefox "docs.google.com/spreadsheets/d/1uDTghO_ZYBs5nfs2kDc0Ms6e9bbx7clx_QgkWii7OMY" &> /dev/null & disown)
+
+# Hannover and Lehrte (first because of highest probability of failure)
+# This breaks if 20 or more articles were published today after the Corona update. I could fix that, but it's extremely unlikely. Changes to the website break stuff way more often.
+# In case of a missed day: Replace »$(date "+%Y\\/%m\\/%d")« with e.g. »2021\\/04\\/17«
+links=$(wget --no-check-certificate -qO - "www.altkreisblitz.de/region-hannover" | grep -E "<div class\\=\\\"news\\-list\\-item\\-title\\\"><h2><a href\\=\\\"https\\:\\/\\/www\\.altkreisblitz\\.de\\/aktuelles\\/datum\\/$(date "+%Y\\/%m\\/%d")" | grep -Eo "https[^\\\"]+")
+found=0
+for link in $links; do # $links not quoted, because that makes it only one long string
+ page=$(wget -qO - "$link" | sed "s/\\r\\n?/\\n/g")
+ # find HTML line with current cases table, remove everything before title (might include another table), take top value (yesterday), remove date
+ temp=$(echo -n "$page" | grep --after-context=1 -Ee "Aktuell( |\\&nbsp\\;)+*Infizierte.*" -e "Aktuell( |\\&nbsp\\;)+registrierte( |\\&nbsp\\;)+Infizierte.*" | sed "s/.*Aktuell( |\\&nbsp\\;)+//" | grep -Eo "[0-9]+\\.[0-9]+\\.[0-9]*\\:( |\\&nbsp\\;)+[0-9\\.]+" | head -n 1 | sed "s/[0-9]+\\.[0-9]+\\.[0-9]*\\:( |\\&nbsp\\;)+//" | sed "s/\\.//")
+ if [[ "$temp" != "" ]]; then
+  cases_hannover="$temp"
+  temp=""
+ fi
+ # find current cases Lehrte based on some super specific HTML formatting (may break any day), extract number
+ temp=$(echo -n "$page" | grep -Eo "Lehrte<\\/p>( |\&nbsp\;)*<\\/td>( |\&nbsp\;)*<td>( |\&nbsp\;)*<p class\\=\\\"bodytext\\\">( |\&nbsp\;)*[0-9\\.]+" | grep -Eo "[0-9\\.]+" | sed "s/\\.//")
+ if [[ "$temp" != "" ]]; then
+  cases_lehrte="$temp"
+  temp=""
+ fi
+ if [[ "$cases_hannover" != "" ]] && [[ "$cases_lehrte" != "" ]]; then
+  found=1
+  break
+ fi
+done
+if [[ $found == 1 ]]; then
+ echo "found"
+else
+ echo "Couldn't find/parse article, skipping. Links checked:\n$links"
+ echo "cases_hannover: $cases_hannover"
+ echo "cases_lehrte: $cases_lehrte"
+ echo
+fi
+
+# vaccination de, world, at
+page=$(wget -qO - "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv")
+# get area-specific rows, start at 2021-04-17, extract 6th column
+vaccination_de=$(echo -n "$page" | grep "Germany" | tail -n +112 | sed "s/([^\,]+\,){5}([^\,]+)\,.+/\2/")
+vaccination_world=$(echo -n "$page" | grep "World" | tail -n +137 | sed "s/([^\,]+\,){5}([^\,]+)\,.+/\2/")
+vaccination_at=$(echo -n "$page" | grep "Austria" | tail -n +114 | sed "s/([^\,]+\,){5}([^\,]+)\,.+/\2/")
+
+# vaccination Saxony
+# temporary file, because "7z -si" seems broken
+wget -qO /tmp/co "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Impfquotenmonitoring.xlsx?__blob=publicationFile"
+vaccination_saxony=$(7z e -so /tmp/co xl/worksheets/sheet2.xml | grep -Eo "r\=\"E16\" s\=\"[0-9]+\"><v>[0-9]+" | sed "s/r\=\"E16\" s\=\"[0-9]+\"><v>//")
+rm /tmp/co
+
+# cases Germany, world, Austria
+cases_de=$(worldometers "/country/germany" 428)
+cases_world=$(worldometers "" 452)
+cases_at=$(worldometers "/country/austria" 428)
+
+# if not found, open page for manual check
+if [[ $found == 0 ]]; then
+ (firefox "www.altkreisblitz.de/region-hannover" &> /dev/null & disown)
+fi
+
+# output to clipboard for overwriting all or to console for appending one entry
+echo -n "$vaccination_de" | xclip -selection clipboard; echo "paste vaccination_de"
+weekday=$(qalc -t "weekday(today)" | sed "s/\\\"//g")
+if [[ $weekday == 5 ]]; then
+ echo -n "$vaccination_saxony"", ""$vaccination_saxony"", ""$vaccination_saxony"; z
+else
+ echo -n "$vaccination_saxony"; z
+fi
+#echo -n "$vaccination_north_saxony"; z
+echo -n "$vaccination_world" | xclip -selection clipboard; echo -n "paste vaccination_world"; z
+echo -n "$vaccination_at" | xclip -selection clipboard; echo -n "paste vaccination_at"; z
+echo -n "$cases_de" | xclip -selection clipboard; echo -n "paste cases_de"; z
+echo -n "$cases_world" | xclip -selection clipboard; echo "paste cases_world"
+if [[ $found == 1 ]]; then
+ if [[ $weekday == 5 ]]; then
+  echo "$cases_hannover"", ""$cases_hannover"", ""$cases_hannover"
+  echo -n "$cases_lehrte"", ""$cases_lehrte"", ""$cases_lehrte"
+ else
+  echo "$cases_hannover"
+  echo -n "$cases_lehrte"
+ fi
+else
+ echo -n "copy, copy (or see above)"
+fi
+z
+echo -n "$cases_at" | xclip -selection clipboard; echo "paste cases_at"

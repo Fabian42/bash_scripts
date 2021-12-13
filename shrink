@@ -1,0 +1,132 @@
+#!/bin/bash
+source /home/fabian/misc/sane
+# This script forces a video below a certain size, with the best quality possible for that size. It also converts to MP4, because why not.
+# Exit value is 3 on FFMPEG error, 2 if a so far unsupported file type was provided (currently only videos and GIFs/APNGs), 1 if the file couldn't be made small enough, otherwise 0 indicates success and then the last line of output is the path/file that worked. To get the filename in a script without letting "tail" overwrite the exit value, use one of these:
+# temp=$(resize.sh); if(($?==0)); then echo $temp | tail -n 1; fi
+# if temp=$(resize.sh); then echo $temp | tail -n 1; fi
+# Effective working directory will be the one with the input file in it.
+
+# TODO: help
+# TODO: parameter for cpulimit
+# TODO: Use Newton method instead of binary search. This requires better knowledge about CRF.
+# TODO: cancel conversion as soon as file grows above limit
+# TODO: allow multiple file names, maybe move file name parameter to the end
+# TODO: Use other parameters, like resolution, framerate, audio quality, black/white, etc. if even CRF 51 is not enough (or if the result looks better). Currently the script fails instead.
+# TODO: support other video formats, images, audio, archives, etc.
+
+### INITIALISATION AND VALIDATION
+
+## interactive or command line parameters
+if [[ -r "$1" && ( "$2" == "d" || "$2" == "t" || "$2" == "g" || "$2" == "b" || "$2" =~ ^[0-9]+$ )]]; then
+ # input file path, relative (so even just filename if in same folder) should also work
+ in="$1"
+ # maximum file size allowed, examples:
+ # Discord: 8*1024²
+ # Telegram: 2000*1024²
+ # GermanZero: 2*1000³
+ # 32bit systems: 2*1024³-1
+ if [[ "$2" == "d" ]]; then
+  limit=8388608
+ elif [[ "$2" == "t" ]]; then
+  limit=2097152000
+ elif [[ "$2" == "g" ]]; then
+  limit=2000000000
+ elif [[ "$2" == "b" ]]; then
+  limit=2147483647
+ else
+  limit=$2
+ fi
+else
+ echo -n "Input file: "
+ while true; do
+  read in
+  if [[ -r "$1" ]]; then break; fi
+  echo "Invalid or unreadable, try again or abort with Ctrl+Shift+Esc."
+ done
+ echo -n "File size limit in bytes: "
+ while true; do
+  read limit
+  if [[ "$2" =~ ^[0-9]+$ ]]; then break; fi
+  echo "Not an integer, try again or abort with Ctrl+Shift+Esc."
+ done
+fi
+# If this is set to "true", the files that resulted from all the attempts except for the best one are deleted. If set to "false", they are kept. This does not guarantee that any specific file will exist (but it is predictable, for example if CRF 18 is the best, then the files with CRF 51, 25, 12, 18, 15, 16 and 17 will exist.
+if [[ "$3" == "false" ]]; then
+ delete_intermediate_results=false
+else
+ # default is true
+ delete_intermediate_results=true
+fi
+
+# start values, crf=51 is worst possible
+good=0
+bad=51
+curr=51
+
+# filename without extension
+name="${in%.*}"
+# file extension
+ext="${in#*.}"
+
+# reason: CRF 0..51 range apparently only apples to h264
+if ! ffprobe "$in" 2>&1 | grep -q h264; then
+ echo "Not a supported file! Currently only h264 (usually .mp4) video is supported. ffprobe output:"
+ ffprobe "$in"
+ exit 2
+fi
+
+output(){
+ echo "This file succeeded ($(stat --printf="%s" "$out")<$limit):"
+ echo "$out"
+ exit
+}
+
+if((in_size<limit)); then
+ echo "Input is already below limit!"
+ out="$in"
+ output
+fi
+
+### MAIN PART
+
+in_size=$(stat --printf="%s" "$in")
+echo "Input file size: $in_size"
+
+while true; do
+ out="$name""_$curr.$ext"
+ echo -n "$(date +"%H:%M:%S") testing crf=$curr, filename: $name""_$curr.$ext"
+ ########################################################
+ # This is where the script will spend 99% of its time! #
+   ffmpeg -nostdin -i "$in" -crf $curr -v 16 "$out"     #
+ ########################################################
+ if(($?!=0)); then
+  echo "\nFFMPEG error!"
+  exit 3
+ fi
+ size=$(stat --printf="%s" "$out")
+ echo -n ", resulting size: $size"
+ if((size>limit)); then
+  if((curr==51)); then
+   echo ">$limit, even with CRF=51"
+   if [[ $delete_intermediate_results == true ]]; then rm "$out"; fi
+   exit 1
+  fi
+  echo ">$limit"
+   # If the current result is above the limit, it gets deleted. Since some valid result should already exist with CRF=51 or whatever else happened later (except if the script fails completely), there will always be a file left.
+  if [[ $delete_intermediate_results == true ]]; then rm "$name""_$curr.$ext"; fi
+  good=$curr
+ else
+  echo "≤$limit"
+   # If the current result is below the limit, then the previous worse/smaller result is no longer needed.
+  if [[ $delete_intermediate_results == true && $curr != 51 ]]; then rm "$name""_$bad.$ext"; fi
+  bad=$curr
+ fi
+
+ # Stop searching if narrowed down to exact number, pick best value that is "worse" than the limit, which luckily already is the current value of $bad.
+ # CRF 0 will never be picked. Normally it shouldn't make the file smaller anyway and it leads to issues in some programs.
+ if((bad-good<2)); then
+  out="$name""_$bad.$ext"
+  output
+ fi
+ curr=$(((good+bad)/2))
+done

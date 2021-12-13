@@ -1,0 +1,75 @@
+#!/bin/bash
+source /home/fabian/misc/sane
+# Once the bug in coreutils is fixed that causes escape sequences to be included in character counts, this entire script can be replaced with just this:
+# for line in $(echo "$*"); do echo "$line" | fold -sw$(tput cols); done
+# TODO: handle stdin
+# maybe TODO: handle fullwith characters (e.g. み) ("fold" also fails at this)
+
+if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
+ # Ooohh, recursion! Should be fine, because none of these lines is "--help" or similar.
+ wrap "Wraps a text on spaces. A width after which to wrap can be given as first argument, the default is the console's width."
+ wrap "Deals better with escape sequences than \"fold\". Does not handle fullwidth characters yet."
+ echo
+ echo "Usage:"
+ echo "wrap [\e[3mWIDTH\e[0m] \e[3mTEXT\e[0m…"
+ echo
+ echo "Example:"
+ echo "wrap 10 \"a bc defff  ghij kp u\\\\e[101mvwx yzä  öüßlmnopqrstuvwxyzäöüßx a\""
+ echo "Output:"
+ wrap 10 "a bc defff  ghij kp u\e[101mvwx yzä  öüßlmnopqrstuvwxyzäöüßx a\e[0m"
+ exit
+fi
+width=$(tput cols)
+if [[ "$1" =~ ^[0-9]+$ ]]; then
+ if(($1!=0)); then width=$1; fi
+ shift
+fi
+# split between arguments and on \n, but not on spaces, loop over lines
+IFS=$'\n'
+for line in $(echo "$*"); do
+ arr=($(echo -n "$line" | sed "s/(.)/\\1\\n/g"))
+ line_start=0
+ space_pos=-1
+ # don't print empty line if last line exactly fills limit
+ while((line_start<${#arr[@]})); do
+  curr=$line_start
+  # This goes one further than you might expect, in case there's a space at a line end, which then does not need to be printed. Off-by-one errors are handled at the end.
+  for((out_col=0; out_col<=width; out_col++)); do
+   if((curr>=${#arr[@]})); then
+    # end of line reached, print the rest
+    echo "${arr[@]:line_start}" | sed "s/(.) /\\1/g"
+    continue 3 # for line …
+   fi
+   # Behold, horrible (and yet incomplete) escape sequence detection! Just skips forwards through (known) escape sequences, because extra rounds through the main loop would be more confusing.
+   # "\e"…
+    while [[ "${arr[curr]}" == $'\e' ]]; do
+     ((curr++))
+     # "\e["…
+     if [[ "${arr[curr]}" == "[" ]]; then
+      ((curr++))
+      # "\e[0"…/"\e[93"…/"\e[101"…
+      while [[ "${arr[curr]}" =~ [0-9] ]]; do
+       ((curr++))
+      done
+     fi
+     # final character: "\em"/"\e[m"/"\e[0m"
+     ((curr++))
+    done
+   # remember last space position
+   if [[ "${arr[curr]}" == " " ]]; then
+    space_pos=$curr;
+   fi
+   # regular scanning progress
+   ((curr++))
+  done
+  # if there was a space in this line…
+  if((space_pos>line_start)); then
+   # confusingly, the second index in array slicing is a length, not an end
+   echo "${arr[@]:line_start:space_pos-line_start}" | sed "s/(.) /\\1/g"
+   line_start=$((space_pos+1))
+  else
+   echo "${arr[@]:line_start:curr-line_start-1}" | sed "s/(.) /\\1/g"
+   line_start=$((curr-1))
+  fi
+ done
+done
