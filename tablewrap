@@ -1,0 +1,32 @@
+#!/bin/bash
+source /home/fabian/misc/sane
+# Mix of "column" and "fold": two-column table whose right side is properly aligned and also line wraps on spaces instead of in the middle of a word. Also works around escape character issues of coreutils ("fold", "wc" etc.).
+# Prints further lines with indent 2 if the text can't fit in proper tabulated form.
+# TODO: help
+
+# find longest left side
+for((i=1; i<$#; i+=2)); do args+=("${!i}"); done
+l_len=$(($(len "${args[@]}")+2))
+r_len=$(($(tput cols)-$l_len))
+# set alignment width
+tabs $l_len
+# enoughspace in terminal for right side?
+if (($l_len<$(tput cols))); then
+ while(($# > 0)); do
+  # print left side
+  echo -n "$1"
+  shift
+  # print right side, folded and aligned
+  wrap $r_len "$1" | sed "s/^/\\t/g"
+  shift
+ done
+else
+ # fallback to indentation 2
+ # TODO: first line currently wraps 2 characters earlier than necessary, seems like all possible fixes are very complicated
+ while(($# > 0)); do
+  wrap $(($(tput cols)-2)) "$1  $2" | sed "1 ! s/^/  /g"
+  shift 2
+ done
+fi
+# reset tabs
+tabs -8
