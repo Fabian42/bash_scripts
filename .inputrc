@@ -1,0 +1,5 @@
+# This file is linked in /home/fabian and /root.
+# Hide the warning if there are many autocomplete entries.
+set completion-query-items 0
+# Instantly show all autocomplete entries, no pagination.
+set page-completions off

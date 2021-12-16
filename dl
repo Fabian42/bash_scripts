@@ -1,5 +1,7 @@
 #!/bin/bash
 source /home/fabian/misc/sane
+# TODO: handle stdin
+# TODO: remove variables and function from .bashrc
 wl_id=$(cat /home/fabian/misc/wl_id.txt)
 tm_id=$(cat /home/fabian/misc/tm_id.txt)
 yt_pw=$(cat /home/fabian/misc/yt_pw.txt)
