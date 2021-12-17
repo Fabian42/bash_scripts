@@ -2,9 +2,9 @@
 source /home/fabian/hdd/d/programs/bash_scripts/sane
 # TODO: handle stdin
 # TODO: remove variables and function from .bashrc
-wl_id=$(cat /home/fabian/misc/wl_id.txt)
-tm_id=$(cat /home/fabian/misc/tm_id.txt)
-yt_pw=$(cat /home/fabian/misc/yt_pw.txt)
+wl_id=$(cat /home/fabian/hdd/d/programs/bash_scripts/wl_id.txt)
+tm_id=$(cat /home/fabian/hdd/d/programs/bash_scripts/tm_id.txt)
+yt_pw=$(cat /home/fabian/hdd/d/programs/bash_scripts/yt_pw.txt)
 
 if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "WARNING: This script is currently getting refactored. This help text is ahead of development."

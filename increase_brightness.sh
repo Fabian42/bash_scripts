@@ -14,8 +14,8 @@ elif((brightness<416)); then
  # set brightness to 100%
  sudo su -c "echo -n 416 > /sys/class/backlight/intel_backlight/brightness"
 # brightness =100%, if gamma inactive, enable
-elif(($(cat /home/fabian/misc/gamma.txt)==0)); then
- echo -n 1 > /home/fabian/misc/gamma.txt
+elif(($(cat /home/fabian/hdd/d/programs/bash_scripts/gamma.txt)==0)); then
+ echo -n 1 > /home/fabian/hdd/d/programs/bash_scripts/gamma.txt
  xcalib -gc .5 -a
 # if gamma already active, do nothing
 fi

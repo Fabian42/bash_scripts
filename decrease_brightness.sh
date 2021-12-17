@@ -4,9 +4,9 @@ brightness=$(cat /sys/class/backlight/intel_backlight/brightness)
 # brightness probably =100%, definitely >25%
 if((brightness>104)); then
  # if gamma active, disable, but keep brightness at maximum
- if(($(cat /home/fabian/misc/gamma.txt)==1)); then
+ if(($(cat /home/fabian/hdd/d/programs/bash_scripts/gamma.txt)==1)); then
   xcalib -c
-  echo -n 0 > /home/fabian/misc/gamma.txt
+  echo -n 0 > /home/fabian/hdd/d/programs/bash_scripts/gamma.txt
  # otherwise, reduce brightness to 25% (and keep gamma inactive)
  else
   sudo su -c "echo -n 104 > /sys/class/backlight/intel_backlight/brightness"
