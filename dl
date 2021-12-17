@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/misc/sane
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 # TODO: handle stdin
 # TODO: remove variables and function from .bashrc
 wl_id=$(cat /home/fabian/misc/wl_id.txt)
@@ -36,7 +36,6 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  echo
  wrap "Current contents of ~/.config/yt-dlp/config:"
  cat ~/.config/yt-dlp/config
- echo
  exit
 elif [[ "$1" == "--comments" ]]; then
  wrap "All lines in a given file are skipped that begin with any amount (including none) of whitespace and then one of these:"

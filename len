@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/misc/sane
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 # maybe TODO: handle fullwith characters (e.g. み) ("wc" also fails at this)
 
 if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then

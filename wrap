@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/misc/sane
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 # Once the bug in coreutils is fixed that causes escape sequences to be included in character counts, this entire script can be replaced with just this:
 # for line in $(echo "$*"); do echo "$line" | fold -sw$(tput cols); done
 # TODO: handle stdin

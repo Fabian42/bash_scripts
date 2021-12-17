@@ -1,5 +1,5 @@
 source /home/fabian/hdd/d/programs/bash_scripts/sane
-# This file gets sources by my actual .bashrc file that exists in both /home/fabian and /root and has the following content:
+# This file gets sourced by my actual .bashrc file that exists in both /home/fabian and /root and has the following content:
 # # increase console history size from 500 to unlimited
 # HISTSIZE=
 # HISTFILESIZE=
@@ -121,6 +121,8 @@ kdesrc-run ()
 ## improvements
 # echo without newline
 alias ech="echo -n"
+# finish line after cat commands, so that command prompt doesn't appear to the right of the last line
+cat(){ echo "$(/usr/bin/cat "$@")";}
 # don't append useless newline, show line numbers
 alias nano="nano -Ll"
 # change shutdown default duration to 0 instead of 1 minute
@@ -340,7 +342,7 @@ mp3(){
 }
 
 # usual Git workflow to upload local changes
-alias commit="git add .; git status; read -p \"Press Enter to continue.\"; git commit; git push"
+alias commit="git diff; git add .; git status; read -p \"Press Enter to continue.\"; git commit; git push"
 
 ## searches
 # search console history

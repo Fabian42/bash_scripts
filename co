@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/misc/sane
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 # Feedback: fabianroeling@googlemail.com
 # maybe TODO for reliability & less effort: translate into Google Sheets script?
 

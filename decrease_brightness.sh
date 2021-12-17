@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/misc/sane
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 brightness=$(cat /sys/class/backlight/intel_backlight/brightness)
 # brightness probably =100%, definitely >25%
 if((brightness>104)); then

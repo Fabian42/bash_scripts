@@ -1,5 +1,9 @@
 #!/bin/bash
-export PATH="/home/fabian/misc:$PATH"
+# allow direct usage of bash scripts like commands
+export PATH="/home/fabian/hdd/d/programs/bash_scripts:$PATH"
+# aliases in functions (and here) work
 shopt -s expand_aliases
+# escape sequences work in echo
 alias echo="echo -e"
+# all regexes work in sed
 alias sed="sed -E"

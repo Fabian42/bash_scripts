@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/misc/sane
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 # remove trash from copied YouTube links
 while clipnotify; do
  new="$(xsel -bo)"

@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/misc/sane
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 # TODO: split up into multiple scripts, to allow killing and restarting separately
 # maybe disable screen off after 10 minutes
 xset -dpms
