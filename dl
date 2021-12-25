@@ -11,13 +11,22 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "Downloads something using youtube-dlp."
  echo "Usage:"
  tablewrap "dl [-[-]|/](h[elp]|?)" "Shows this help."\
-           "dl [m|r|\e[3mINDEX\e[0m]…" "Downloads WL into Downloads or, with \"m\", temp_music into t."\
-           "dl [m|n|r]… (\e[3mFILE\e[0m|\e[3mURL\e[0m [m|n|r|\e[3mINDEX\e[0m]…)…" "Downloads all \e[3mURL\e[0ms listed as arguments or in \e[3mFILE\e[0ms with yt-dlp."
+           "dl [m|n|N|r|\e[3mINDEX\e[0m]…" "Downloads WL into Downloads or, with \"m\", temp_music into t."\
+           "dl [f|m|n|N|r]… (\e[3mFILE\e[0m|\e[3mURL\e[0m [f|m|n|N|r|\e[3mINDEX\e[0m]…)…" "Downloads all \e[3mURL\e[0ms listed as arguments or in \e[3mFILE\e[0ms with yt-dlp."
  echo
- wrap "An \"m\" causes this entry to be downloaded as audio only and converted to MP3. If \"m\" occurs at the beginning, this applies to all of them."
- wrap "An \"n\" at the beginning causes all entries to be numbered together, so all files produced by the first entry get a \"0001\" prefix, all files produced by the second entry get a \"0002\" prefix, etc.. After an entry, \"n\" causes all lines in that \e[3mFILE\e[0m to be similarly numbered together (or everything from that \e[3mURL\e[0m to get a \"0001\" prefix for no reason)."
- wrap "An \"r\" causes this entry (or all, if at the beginning) to ignore the 1080p limit. Otherwise 2K/4K/… videos are downloaded in 1080p instead, if possible."
- wrap "If both \"m\" and \"r\" are specified, \"m\" takes precedence."
+ wrap "Context-specific options:"
+ wrap "f: Create subfolders and download into them."
+ wrap "n: Number entries. Enabled by default for playlists."
+ wrap "These apply to the level where they are specified, for example \"dl n fileA fileB\" prepends all video filenames that come from fileA with \"0001_\" and all filenames from fileB with \"0002_\". \"dl fileA n fileB\" prepends the video from the first line of fileA with \"0001_\", the video from the second line of fileA with \"0002_\" and the videos from fileB with nothing. \"dl f plA plB\" creates two folders, named after the playlists behind plA and plB, and the video files will be put into those respective folders. \"dl fileA f\" creates one folder per line in fileA."
+ echo
+ wrap "General options:"
+ wrap "m: Download as audio only and convert to MP3."
+ wrap "r: Limit resolution to 1080p. Set by default. If both \"m\" and \"r\" are specified, \"m\" takes precedence."
+ wrap "These apply to everything on their level and below. For example \"dl m urlA urlB\" downloads urlA and urlB as music, \"dl urlA m urlB\" downloads urlA as music and urlB as video. A file can override the download command for any line."
+ wrap "Capital M and R disable their lowercase versions. This is especially useful for R, because it always has to be specified to download videos with a resolution of >1080p. For example \"dl m urlA urlB M\" downloads urlA as music and urlB as video."
+ wrap "\"N\" is the opposite of \"n\" and overrides it if both are present. This is most useful to not number playlist entries, but can also be used to manually override an \"n\" in e.g. a Bash alias."
+ wrap "The arguments \"f\", \"m\", \"n\", \"N\" and \"r\" do not require spaces between them, so e.g. \"nfm\" is possible."
+ echo
  wrap "One number can be specified as a start index, a second one as an end index. Those indices are line numbers if the entry is a file and a playlist index if it is an URL. A third and further numbers do nothing."
  wrap "Each line in a \e[3mFILE\e[0m works just like another \"dl\" command, so for example an empty line downloads WL. But the usual usecase is just a list of links. Lines starting with a usual comment indicator are skipped. Run \"dl --comments\" for a full list."
  wrap "Do specify a file named \"m\", \"n\" or \"r\", use a path: \"./m\""
@@ -81,3 +90,4 @@ fi
 if [[ "$dl_time_printed" == "" ]]; then date "+%H:%M:%S"; export dl_time_printed=1; fi
 # preparation for later looking up files in all CDPATH locations
 if [[ "$CDPATH" == "" ]]; then CDPATH="."; fi
+t

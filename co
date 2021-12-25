@@ -7,7 +7,7 @@ worldometers(){
  # $1 is the end of the URL to retrieve
  # $2 is the number of leading rows to remove for alignment of all tables
  # download page, find series name on website, get number list ("data"), remove prefix, remove suffix, "null"→"0", negatives→0, split on commas, align to 2021-04-17
- wget -qO - "worldometers.info/coronavirus$1" | grep -im 1 --after-context=5 "name: 'Currently infected'" | grep "data" | sed "s/ *data\\: \\[//" | sed "s/\\] *\\} *\\]? *\\,? *\\{? *//" | sed "s/null/0/g" | sed "s/\\-[0-9]+/0/g" | sed "s/\\,/\\n/g" | tail -n +$2
+ wget -qO - "worldometers.info/coronavirus$1" | grep -im 1 --after-context=5 "name: 'Currently infected'" | grep "data" | sed "s/ *data\\: \\[//;s/\\] *\\} *\\]? *\\,? *\\{? *//;s/null/0/g;s/\\-[0-9]+/0/g;s/\\,/\\n/g" | tail -n +$2
 }
 
 z(){
@@ -29,7 +29,7 @@ found=0
 for link in $links; do # $links not quoted, because that makes it only one long string
  page=$(wget -qO - "$link" | sed "s/\\r\\n?/\\n/g")
  # find HTML line with current cases table, remove everything before title (might include another table), take top value (yesterday), remove date
- temp=$(echo -n "$page" | grep --after-context=1 -Ee "Aktuell( |\\&nbsp\\;)+*Infizierte.*" -e "Aktuell( |\\&nbsp\\;)+registrierte( |\\&nbsp\\;)+Infizierte.*" | sed "s/.*Aktuell( |\\&nbsp\\;)+//" | grep -Eo "[0-9]+\\.[0-9]+\\.[0-9]*\\:( |\\&nbsp\\;)+[0-9\\.]+" | head -n 1 | sed "s/[0-9]+\\.[0-9]+\\.[0-9]*\\:( |\\&nbsp\\;)+//" | sed "s/\\.//")
+ temp=$(echo -n "$page" | grep --after-context=1 -Ee "Aktuell( |\\&nbsp\\;)+*Infizierte.*" -e "Aktuell( |\\&nbsp\\;)+registrierte( |\\&nbsp\\;)+Infizierte.*" | sed "s/.*Aktuell( |\\&nbsp\\;)+//" | grep -Eo "[0-9]+\\.[0-9]+\\.[0-9]*\\:( |\\&nbsp\\;)+[0-9\\.]+" | head -n 1 | sed "s/[0-9]+\\.[0-9]+\\.[0-9]*\\:( |\\&nbsp\\;)+//;s/\\.//")
  if [[ "$temp" != "" ]]; then
   cases_hannover="$temp"
   temp=""
@@ -64,7 +64,7 @@ vaccination_at=$(echo -n "$page" | grep "Austria" | tail -n +112 | sed "s/([^\,]
 # vaccination Saxony
 # temporary file, because "7z -si" seems broken
 wget -qO /tmp/co "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Impfquotenmonitoring.xlsx?__blob=publicationFile"
-vaccination_saxony=$(7z e -so /tmp/co xl/worksheets/sheet2.xml | grep -Eo "r\=\"E16\" s\=\"[0-9]+\"><v>[0-9]+" | sed "s/r\=\"E16\" s\=\"[0-9]+\"><v>//")
+vaccination_saxony=$(7z e -so /tmp/co xl/worksheets/sheet2.xml | grep -Eo "r\=\"F16\" s\=\"[0-9]+\"><v>[0-9]+" | sed "s/r\=\"F16\" s\=\"[0-9]+\"><v>//")
 rm /tmp/co
 
 # cases Germany, world, Austria
@@ -103,3 +103,4 @@ else
 fi
 z
 echo -n "$cases_at" | xclip -selection clipboard; echo "paste cases_at"
+xdotool key q sleep 0.1 key return

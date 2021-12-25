@@ -121,8 +121,6 @@ kdesrc-run ()
 ## improvements
 # echo without newline
 alias ech="echo -n"
-# finish line after cat commands, so that command prompt doesn't appear to the right of the last line
-cat(){ echo "$(/usr/bin/cat "$@")";}
 # don't append useless newline, show line numbers
 alias nano="nano -Ll"
 # change shutdown default duration to 0 instead of 1 minute
@@ -161,8 +159,6 @@ alias blu="killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
 alias pulse="systemctl --user restart pulseaudio.service; exit"
 # stop microphone volume from changing randomly
 alias mic="for i in {0..9999}; do pactl set-source-volume @DEFAULT_SOURCE@ 100%; sleep 10; done"
-# all regexes in sed
-alias sed="sed -E"
 # create a new script file here
 scr(){
  if [ -e "$1.sh" ]; then
@@ -288,18 +284,19 @@ num(){
   echo "0000 $old"
   for ((i=1; i<=$max; i++)); do
    new=$(ls | grep "^$(printf "%04d" $i)" | wc -l)
+   if [[ "new" == "" ]]; then echo "set to 0"; new=0; fi
    diff=$(($new-$old))
    case $diff in
-    (-1)
+    (1)
      echo "$i $new \e[93m$diff\e[0m"
      ;;
-    (-2)
+    (2)
      echo "$i $new \e[33m$diff\e[0m"
      ;;
-    (-*)
+    ([1-9]*)
      echo "$i $new \e[31m$diff\e[0m"
      ;;
-    (*)
+    (0 | -*)
      echo "$i $new \e[32m$diff\e[0m"
      ;;
    esac
@@ -404,6 +401,7 @@ alias now="date \"+%H:%M:%S\""
 # test downloaded DVD archive
 7t(){ IFS=$'\n'; c "Downloads/Telegram Desktop"; for file in $(ls -1 | grep -e "\.zip$" -e "\.zip\.001$"); do 7z t "$file"; done;}
 # output matching lines from this file
+# TODO: output entire function
 alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
 # package history
 pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg;}
@@ -411,7 +409,7 @@ pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 
 # maximum temperature of any component
 alias sen="sensors iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+\\\\°C\" | grep -oE \"[0-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
 # watch maximum temperature
-alias sens="for i in {1..23}; do xdotool key Ctrl+plus; done; watch -tdn1 \"sensors -u iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep \\\"\\\\\\\\_input\\\" | sed -E \\\"s/.+\\\\\\\\_input\\\\\\\\: //\\\" | sed -E \\\"s/\\\\\\\\..+//\\\" | sort -n | tail -1\""
+alias sens="for i in {1..23}; do xdotool key Ctrl+plus; done; watch -tdn1 \"sensors -u iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep \\\"\\\\\\\\_input\\\" | sed -E \\\"s/.+\\\\\\\\_input\\\\\\\\: //;s/\\\\\\\\..+//\\\" | sort -n | tail -1\""
 
 # highlight parts of an output
 # TODO: use a loop and build a string that then gets executed with $() instead of this mess
@@ -507,6 +505,9 @@ dl(){
   fi
  fi
 }
+
+# temporary download command
+alias dlp="yt-dlp -f \"bv*[height<=?1080]+ba/b[height<=?1080]/22/18\" --check-formats --sub-lang \"ja,ja-JP,de,de-DE,en-US,en,en-GB\" --embed-subs"
 
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)

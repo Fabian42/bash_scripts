@@ -3,7 +3,9 @@
 export PATH="/home/fabian/hdd/d/programs/bash_scripts:$PATH"
 # aliases in functions (and here) work
 shopt -s expand_aliases
-# escape sequences work in echo
-alias echo="echo -e"
 # all regexes work in sed
 alias sed="sed -E"
+# finish line after cat commands, so that command prompt doesn't appear to the right of the last line
+cat(){ echo "$(/usr/bin/cat "$@")";}
+# escape sequences work in echo
+alias echo="echo -e"
