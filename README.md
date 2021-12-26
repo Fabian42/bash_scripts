@@ -21,4 +21,5 @@ Contents so far:
   * `decrease_brightness.sh` and `increase_brightness.sh`: Change screen brightness, but only using the brightness steps off, min, ¼, max and max+increased gamma
   * `volume_down.sh` and `volume_up.sh`: Change volume, ignoring any upper limits, and show new volume in notification.
 * `notepad.sh`: Opens Notepad++ without Windows' awful font blurring and focuses the window.
+
 These are all executable files, despite most missing the "`.sh`" extension. The file names are kept short so that they can be used just like regular commands in a console or script, by having my `programs/bash_scripts` folder in the `PATH` environment variable.
