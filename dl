@@ -12,76 +12,53 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  echo "Usage:"
  tablewrap "dl [-[-]|/](h[elp]|?)" "Shows this help."\
            "dl [m|n|N|r|\e[3mINDEX\e[0m]…" "Downloads WL into Downloads or, with \"m\", temp_music into t."\
-           "dl [f|m|n|N|r]… (\e[3mFILE\e[0m|\e[3mURL\e[0m [f|m|n|N|r|\e[3mINDEX\e[0m]…)…" "Downloads all \e[3mURL\e[0ms listed as arguments or in \e[3mFILE\e[0ms with yt-dlp."
+           "dl [f|F|m|M|n|N|r|R]… (\e[3mFILE\e[0m|\e[3mURL\e[0m [f|F|m|M|n|N|r|R|\e[3mINDEX\e[0m]…)…" "Downloads all \e[3mURL\e[0ms listed as arguments or in \e[3mFILE\e[0ms with yt-dlp."
  echo
  wrap "Context-specific options:"
- wrap "f: Create subfolders and download into them."
- wrap "n: Number entries. Enabled by default for playlists."
+ wrap "f: Create subfolders and download into them. Never set by default."
+ wrap "F: Do not create subfolders. Always set by default, so only useful to overwrite e.g. Bash aliases that specify \"f\"."
+ wrap "n: Number entries. Set by default for playlists."
+ wrap "N: Do not number entries. Set by default for files and videos/tracks."
+ wrap "One number can be specified as a starting \e[3mINDEX\e[0m, a second one as an ending \e[3mINDEX\e[0m. Those indices are line numbers if the entry is a file and a playlist index if it is a URL. A third and further numbers do nothing."
  wrap "These apply to the level where they are specified, for example \"dl n fileA fileB\" prepends all video filenames that come from fileA with \"0001_\" and all filenames from fileB with \"0002_\". \"dl fileA n fileB\" prepends the video from the first line of fileA with \"0001_\", the video from the second line of fileA with \"0002_\" and the videos from fileB with nothing. \"dl f plA plB\" creates two folders, named after the playlists behind plA and plB, and the video files will be put into those respective folders. \"dl fileA f\" creates one folder per line in fileA."
+ wrap "If these are used on multiple levels, then numbers for lower levels will come after numbers for higher levels and folders for lower levels will be inside folders for higher levels, for example \"dl n fileA n fileB\" will create videos with names like \"0001_0001_…\", \"0001_0002_…\", \"0001_0003_…\", … from fileA and videos with names like \"0002_…\" from fileB."
+ wrap "When arguments conflict, the last one is applied, so e.g. \"dl f F urlA\" downloads urlA without creating a folder."
  echo
  wrap "General options:"
- wrap "m: Download as audio only and convert to MP3."
- wrap "r: Limit resolution to 1080p. Set by default. If both \"m\" and \"r\" are specified, \"m\" takes precedence."
- wrap "These apply to everything on their level and below. For example \"dl m urlA urlB\" downloads urlA and urlB as music, \"dl urlA m urlB\" downloads urlA as music and urlB as video. A file can override the download command for any line."
- wrap "Capital M and R disable their lowercase versions. This is especially useful for R, because it always has to be specified to download videos with a resolution of >1080p. For example \"dl m urlA urlB M\" downloads urlA as music and urlB as video."
- wrap "\"N\" is the opposite of \"n\" and overrides it if both are present. This is most useful to not number playlist entries, but can also be used to manually override an \"n\" in e.g. a Bash alias."
- wrap "The arguments \"f\", \"m\", \"n\", \"N\" and \"r\" do not require spaces between them, so e.g. \"nfm\" is possible."
+ wrap "m: Download as audio only and convert to MP3. Set by default for SoundCloud."
+ wrap "M: Download as video and convert to MP4. Set by default for everything except SoundCloud."
+ wrap "r: Limit resolution to 1080p. Always set by default. If both \"m\" and \"r\" are specified, \"m\" takes precedence."
+ wrap "R: Download the best quality. Never set by default."
+ wrap "These apply to everything on their level and below. For example \"dl m urlA urlB M urlC\" downloads urlA and urlC as music and urlB as video. Every line in a file can override the parameters for the entire file, which then only applies to that line."
+ wrap "When arguments conflict, the last one is applied, so e.g. \"dl m M urlA\" downloads urlA as video."
  echo
- wrap "One number can be specified as a start index, a second one as an end index. Those indices are line numbers if the entry is a file and a playlist index if it is an URL. A third and further numbers do nothing."
- wrap "Each line in a \e[3mFILE\e[0m works just like another \"dl\" command, so for example an empty line downloads WL. But the usual usecase is just a list of links. Lines starting with a usual comment indicator are skipped. Run \"dl --comments\" for a full list."
- wrap "Do specify a file named \"m\", \"n\" or \"r\", use a path: \"./m\""
- wrap "Behaviour summary: \e[3mFILE\e[0ms get expanded until only \e[3mURL\e[0ms are left, \"m\" and \"r\" get passed along, \"n\" gets applied only in the current command."
+ wrap "Spaces between arguments are not necessary if the meaning is clear, so e.g. \"5fNR7\" works. \"m24\" would download index 24 and above as music, not 2 to 4."
+ wrap "Each line in a file works just like another \"dl\" command, so for example an empty line downloads WL, files can reference other files and multiple URLs can be given on one line. But the usual usecase is just a list of one link/ID per line."
+ wrap "To specify a file that could be interpreted as other arguments, use a path: \"./m\""
+ wrap "To specify a YouTube ID that could be interpreted as other arguments, use a URL: youtu.be/fFmMnNrR059"
+ echo
+ wrap "All lines in a given file are skipped that begin with any amount (including none) of whitespace and then one of these (case-insensitive):"
+ echo "# / \\ * ; % ! | ( { = ¢ £ ⍝ :: <# \$! \$\$ {- @c R: NB. ''' \"\"\" <!-- --[[ --[="
+ wrap "Multi-line comments are not supported (prefixes like /* still just apply to that one line). Closing of e.g. HTML comments is not necessary."
+ wrap "Comments starting with REM, -- and a few others are not supported because YouTube IDs could start with those. Comments starting with \" or ' are not supported because they can be used to prevent word splitting."
+ wrap "These comment indicators come from various programming languages and markdown formats. If you are used to a comment syntax that is not listed here, open an issue at: \e[34mhttps://github.com/Fabian42/bash_scripts/issues\e[0m"
+ echo
+ wrap "Files and playlists get expanded until only URLs are left, passing on the current m/M and r/R state."
  wrap "The script tries to be smart. For example all folders in \$CDPATH are searched and IDs instead of full URLs often work."
- echo
  wrap "English, German and Japanese non-automatic subtitles are included in video downloads."
  wrap "yt-dlp and FFMPEG are both set to silent except for the progress indicator, in the ideal case the only output left at the end are success messages from the script. Errors and some warnings will still appear."
  echo
  wrap "Examples:"
- tablewrap "dl" "Downloads the entire WL playlist into ~/Downloads. Already downloaded tracks are skipped, as usual."\
-           "dl m 4" "Downloads the temp_music playlist as MP3 into t, skipping the first three tracks."\
+ tablewrap "dl" "Downloads the entire WL playlist into $HOME/Downloads. Already downloaded tracks are skipped, as usual."\
+           "dl m 4" "Downloads the temp_music playlist as MP3 into $drive/temp_music, skipping the first three tracks."\
            "dl https://www.youtube.com/watch?v=lXMskKTw3Bc" "Downloads that video."\
-           "dl r list.txt 2 4 \"enL2Z05WhTU\" m '_qJHEPecdvg'" "Downloads videos from lines 2, 3 and 4 of file \"list.txt\" and the YouTube video with the ID \"_qJHEPecdvg\" at maximum resolution and the YouTube video with the ID \"_qJHEPecdvg\" as MP3."\
-           "dl LL 42 m 69 3141 k3RKPyJPMOY r" "Downloads videos 42 to 69 from the liked videos playlist as MP3 and then the video with the ID \"k3RKPyJPMOY\" in maximum resolution."
+           "dl R list.txt 2 4 \"enL2Z05WhTU\" m '_qJHEPecdvg'" "Downloads videos from lines 2, 3 and 4 of file \"list.txt\" and the YouTube video with the ID \"_qJHEPecdvg\" at maximum resolution and the YouTube video with the ID \"_qJHEPecdvg\" as MP3."\
+           "dl LL 42 m 69 3141 k3RKPyJPMOY R" "Downloads videos 42 to 69 from the liked videos playlist as MP3 and then the video with the ID \"k3RKPyJPMOY\" with maximum resolution."
  echo
- wrap "Current contents of ~/.config/yt-dlp/config:"
+ wrap "Source on GitHub: \e[34mhttps://github.com/Fabian42/bash_scripts/blob/master/dl\e[0m"
+ echo
+ wrap "Current contents of $HOME/.config/yt-dlp/config:"
  cat ~/.config/yt-dlp/config
- exit
-elif [[ "$1" == "--comments" ]]; then
- wrap "All lines in a given file are skipped that begin with any amount (including none) of whitespace and then one of these:"
- echo "#"
- echo "/"
- echo "\\"
- echo "*"
- echo ";"
- echo "%"
- echo "\!"
- echo "|"
- echo "("
- echo "{"
- echo "="
- echo "¢"
- echo "£"
- echo "⍝"
- echo "::"
- echo "<#"
- echo "\$\!"
- echo "\$\$"
- echo "{-"
- echo "@c"
- echo "@C"
- echo "R:"
- echo "r:"
- echo "NB."
- echo "Nb."
- echo "nB."
- echo "nb."
- echo "\'\'\'"
- echo "\"\"\""
- echo "\<\!--"
- echo "--[["
- echo "--[="
- wrap "Multi-line comments are not supported (prefixes like /* still just apply to that one line). Closing of e.g. HTML comments is not necessary."
- wrap "Comments starting with REM, -- and a few others are not supported because YouTube IDs could start with those. Comments starting with \" or ' are not supported because they can be used to prevent word splitting."
  exit
 fi
 
@@ -90,4 +67,3 @@ fi
 if [[ "$dl_time_printed" == "" ]]; then date "+%H:%M:%S"; export dl_time_printed=1; fi
 # preparation for later looking up files in all CDPATH locations
 if [[ "$CDPATH" == "" ]]; then CDPATH="."; fi
-t

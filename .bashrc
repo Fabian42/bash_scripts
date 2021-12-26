@@ -339,7 +339,7 @@ mp3(){
 }
 
 # usual Git workflow to upload local changes
-alias commit="git diff; git add .; git status; read -p \"Press Enter to continue.\"; git commit; git push"
+alias commit="git diff; git add .; git status; read -p \"Press Enter to continue.\"; git commit --no-status; git push"
 
 ## searches
 # search console history
@@ -461,50 +461,50 @@ about(){
  done;
 }
 
-# Shortcut for youtube-dlp. For more info, run "dl --help".
-# TODO: get working in Termux
-# TODO: only number files if argument is actually a playlist: youtube-dl -s <URL> | grep -c ".*Downloading video [0-9]* of [0-9]*"
-#       alternative: "--flat-playlist"
-# TODO: expand playlists recursively (0001_0001_a.mp4), announce lengths
-# TODO: automatically --playlist-reverse for channels+users
-# TODO: preview command to simulate (print filenames): --get-filename -o "%(whatever)s"
-# TODO: warn for 360°, 3D and multiple cameras
-dl(){
- if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ ]]; then
-  /home/fabian/hdd/d/programs/bash_scripts/dl --help
- else
-  date "+%H:%M:%S"
-  if [ "$1" == "" ]; then
-   youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -u "fabianroeling@googlemail.com" -p "$yt_pw" -o "/home/fabian/Downloads/%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --mark-watched --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" https://www.youtube.com/playlist?list=$wl_id
-  else
-   if [[ "$1" =~ ^[0-9]+$ ]]; then
-    youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -u "fabianroeling@googlemail.com" -p "$yt_pw" -o "/home/fabian/Downloads/%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --mark-watched --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --playlist-start $1 --exec "echo \"\$(date "+%H:%M:%S") {}\"" https://www.youtube.com/playlist?list=$wl_id
-   else
-    if [ "$2" == "" ]; then
-     youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" $1
-    else
-     if [[ "$2" =~ ^[0-9]+$ ]]; then
-      youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --playlist-start $2 --exec "echo \"\$(date "+%H:%M:%S") {}\"" $1
-     else
-      if [ "$1" == "m" ]; then
-       if [[ "$3" =~ ^[0-9]+$ ]]; then
-        youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames --playlist-start $3 -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" $2
-       else
-        shift
-        youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"
-       fi
-      else
-       youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "en-GB,en,en-US,de,de-DE,ja,ja-JP" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" "$@"
-      fi
-     fi
-    fi
-   fi
-  fi
-  if (( "$?" != 0 )); then
-   echo "There were errors while downloading!"
-  fi
- fi
-}
+# # Shortcut for youtube-dlp. For more info, run "dl --help".
+# # TODO: get working in Termux
+# # TODO: only number files if argument is actually a playlist: youtube-dl -s <URL> | grep -c ".*Downloading video [0-9]* of [0-9]*"
+# #       alternative: "--flat-playlist"
+# # TODO: expand playlists recursively (0001_0001_a.mp4), announce lengths
+# # TODO: automatically --playlist-reverse for channels+users
+# # TODO: preview command to simulate (print filenames): --get-filename -o "%(whatever)s"
+# # TODO: warn for 360°, 3D and multiple cameras
+# dl(){
+#  if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ ]]; then
+#   /home/fabian/hdd/d/programs/bash_scripts/dl --help
+#  else
+#   date "+%H:%M:%S"
+#   if [ "$1" == "" ]; then
+#    youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -u "fabianroeling@googlemail.com" -p "$yt_pw" -o "/home/fabian/Downloads/%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --mark-watched --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" https://www.youtube.com/playlist?list=$wl_id
+#   else
+#    if [[ "$1" =~ ^[0-9]+$ ]]; then
+#     youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -u "fabianroeling@googlemail.com" -p "$yt_pw" -o "/home/fabian/Downloads/%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --mark-watched --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --playlist-start $1 --exec "echo \"\$(date "+%H:%M:%S") {}\"" https://www.youtube.com/playlist?list=$wl_id
+#    else
+#     if [ "$2" == "" ]; then
+#      youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" $1
+#     else
+#      if [[ "$2" =~ ^[0-9]+$ ]]; then
+#       youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --playlist-start $2 --exec "echo \"\$(date "+%H:%M:%S") {}\"" $1
+#      else
+#       if [ "$1" == "m" ]; then
+#        if [[ "$3" =~ ^[0-9]+$ ]]; then
+#         youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames --playlist-start $3 -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" $2
+#        else
+#         shift
+#         youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"
+#        fi
+#       else
+#        youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "en-GB,en,en-US,de,de-DE,ja,ja-JP" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" "$@"
+#       fi
+#      fi
+#     fi
+#    fi
+#   fi
+#   if (( "$?" != 0 )); then
+#    echo "There were errors while downloading!"
+#   fi
+#  fi
+# }
 
 # temporary download command
 alias dlp="yt-dlp -f \"bv*[height<=?1080]+ba/b[height<=?1080]/22/18\" --check-formats --sub-lang \"ja,ja-JP,de,de-DE,en-US,en,en-GB\" --embed-subs"
