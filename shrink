@@ -6,14 +6,6 @@ source /home/fabian/hdd/d/programs/bash_scripts/sane
 # if temp=$(resize.sh); then echo $temp | tail -n 1; fi
 # Effective working directory will be the one with the input file in it.
 
-# TODO: help
-# TODO: parameter for cpulimit
-# TODO: Use Newton method instead of binary search. This requires better knowledge about CRF.
-# TODO: cancel conversion as soon as file grows above limit
-# TODO: allow multiple file names, maybe move file name parameter to the end
-# TODO: Use other parameters, like resolution, framerate, audio quality, black/white, etc. if even CRF 51 is not enough (or if the result looks better). Currently the script fails instead.
-# TODO: support other video formats, images, audio, archives, etc.
-
 ### INITIALISATION AND VALIDATION
 
 ## interactive or command line parameters

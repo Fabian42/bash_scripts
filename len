@@ -1,6 +1,5 @@
 #!/bin/bash
 source /home/fabian/hdd/d/programs/bash_scripts/sane
-# maybe TODO: handle fullwith characters (e.g. み) ("wc" also fails at this)
 
 if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "Counts characters in a string. Like \"wc -m\", but without counting escape sequences."

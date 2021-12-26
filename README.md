@@ -4,7 +4,6 @@ Contains various bash scripts that I have written mainly for myself.
 Contents so far:
 * `sane`: Fixes issues with Bash that would make me go insane if I had to do them in every script separately. This short script is imported by most of the others. Since I create all new Bash scripts using my "`scr`" console shortcut, that gets done for me automatically.
 * `.bashrc`: Many console shortcuts, fixes for annoying behaviour of various programs and other improvements and tools. This file has grown a lot over time.
-  * (TODO: explain some of the entries better)
 * `co`: Parses various sources and copies the resulting Corona vaccination and case numbers to clipboard for my spreadsheets: https://docs.google.com/spreadsheets/d/1uDTghO_ZYBs5nfs2kDc0Ms6e9bbx7clx_QgkWii7OMY
   * If anyone wants other regions to be added to spreadsheet, just tell me and I'll see what I can do.
   * old version: https://pastebin.com/uHzzMeac
@@ -22,7 +21,4 @@ Contents so far:
   * `decrease_brightness.sh` and `increase_brightness.sh`: Change screen brightness, but only using the brightness steps off, min, ¼, max and max+increased gamma
   * `volume_down.sh` and `volume_up.sh`: Change volume, ignoring any upper limits, and show new volume in notification.
 * `notepad.sh`: Opens Notepad++ without Windows' awful font blurring and focuses the window.
-These are all executable files, despite most missing the "`.sh`" extension. The file names are kept short so that they can be used just like regular commands in a console or script, by having my `~/misc` folder in the `PATH` environment variable.
-
-TODO: move "`TODO`"s into GitHub issues that are currently spread throughout the scripts  
-TODO: document dependencies
+These are all executable files, despite most missing the "`.sh`" extension. The file names are kept short so that they can be used just like regular commands in a console or script, by having my `programs/bash_scripts` folder in the `PATH` environment variable.

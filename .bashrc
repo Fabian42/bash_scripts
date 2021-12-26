@@ -22,9 +22,6 @@ alias aka="nano -Ll +119 /home/fabian/hdd/d/programs/bash_scripts/.bashrc; sourc
 HISTSIZE=
 HISTFILESIZE=
 
-# TODO: extract longer functions into separate scripts
-# TODO: understand and customise this preinstalled default section
-
 [ -r /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion
 
 # Change the window title of X terminals
@@ -243,9 +240,6 @@ c(){
 alias g="c /home/fabian/hdd/d/programs/bash_scripts"
 
 # visually confirmed deletion to trash
-# TODO: move to correct folder for files on HDD
-# TODO: delete older/big files if maximum trash size reached, but prefer deleting newer gigantic files in extreme cases, find proper balance
-# TODO: cause Dolphin to not grey out "empty bin" anymore (how?)
 del(){
  for file in "$@"; do
   if [ -e "/home/fabian/.local/share/Trash/files/$(basename "$file")" ]; then
@@ -310,7 +304,6 @@ num(){
 }
 
 # convert to MP3 with best quality and remove metadata (from anywhere to current working directory)
-# TODO: proper ffprobe check instead of ".mp3"  
 mp3(){
  for file in "$@"; do
   # expand links to full path
@@ -346,7 +339,6 @@ alias commit="git diff; git add .; git status; read -p \"Press Enter to continue
 h(){ if [[ "$1" == "" ]]; then history | tail -n 100; else history | grep -i "$@" | tail -n 100 | grep -i "$@"; fi;}
 # search console history, no 100 entries limit
 hi(){ if [[ "$1" == "" ]]; then history; else history | grep -i "$@" | grep -i "$@"; fi;}
-# TODO: replace "find" aliases with "locate"
 # search files everywhere, ignoring case, partial file name, avoid most of the usual "permission denied" error messages and hide the rest
 search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i "$1";}
 # same as above, but only in the current folder and subfolders and not as root and not hiding errors
@@ -401,7 +393,6 @@ alias now="date \"+%H:%M:%S\""
 # test downloaded DVD archive
 7t(){ IFS=$'\n'; c "Downloads/Telegram Desktop"; for file in $(ls -1 | grep -e "\.zip$" -e "\.zip\.001$"); do 7z t "$file"; done;}
 # output matching lines from this file
-# TODO: output entire function
 alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
 # package history
 pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg;}
@@ -412,7 +403,6 @@ alias sen="sensors iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 a
 alias sens="for i in {1..23}; do xdotool key Ctrl+plus; done; watch -tdn1 \"sensors -u iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep \\\"\\\\\\\\_input\\\" | sed -E \\\"s/.+\\\\\\\\_input\\\\\\\\: //;s/\\\\\\\\..+//\\\" | sort -n | tail -1\""
 
 # highlight parts of an output
-# TODO: use a loop and build a string that then gets executed with $() instead of this mess
 hl(){ 
  if [ "$2" == "" ]; then
   grep -e "" -e "$1";
@@ -430,10 +420,6 @@ hl(){
 }
 
 # Info about commands: Location, package+info, dependencies, (wait for enter,) owned files and all occurrences of search term
-# TODO: exclude the package itself from dependants list
-# TODO: hide errors at the beginning, generally make similar to/integrate into un
-# TODO: if no results, use "pacman -Q" for a "did you mean", maybe even correct typos
-# TODO: list executable files before Enter
 about(){
  # In the simplest case, this already shows the location.
  whereis "$@";
@@ -462,13 +448,6 @@ about(){
 }
 
 # # Shortcut for youtube-dlp. For more info, run "dl --help".
-# # TODO: get working in Termux
-# # TODO: only number files if argument is actually a playlist: youtube-dl -s <URL> | grep -c ".*Downloading video [0-9]* of [0-9]*"
-# #       alternative: "--flat-playlist"
-# # TODO: expand playlists recursively (0001_0001_a.mp4), announce lengths
-# # TODO: automatically --playlist-reverse for channels+users
-# # TODO: preview command to simulate (print filenames): --get-filename -o "%(whatever)s"
-# # TODO: warn for 360°, 3D and multiple cameras
 # dl(){
 #  if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ ]]; then
 #   /home/fabian/hdd/d/programs/bash_scripts/dl --help

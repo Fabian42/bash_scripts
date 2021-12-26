@@ -2,8 +2,6 @@
 source /home/fabian/hdd/d/programs/bash_scripts/sane
 # Mix of "column" and "fold": two-column table whose right side is properly aligned and also line wraps on spaces instead of in the middle of a word. Also works around escape character issues of coreutils ("fold", "wc" etc.).
 # Prints further lines with indent 2 if the text can't fit in proper tabulated form.
-# TODO: help
-# maybe TODO: handle more columns, wrap more columns if necessary/helpful
 
 # find longest left side
 for((i=1; i<$#; i+=2)); do args+=("${!i}"); done
@@ -23,7 +21,6 @@ if (($l_len<$(tput cols))); then
  done
 else
  # fallback to indentation 2
- # TODO: first line currently wraps 2 characters earlier than necessary, seems like all possible fixes are very complicated
  while(($# > 0)); do
   wrap $(($(tput cols)-2)) "$1  $2" | sed "1 ! s/^/  /g"
   shift 2
