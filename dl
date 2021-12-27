@@ -23,8 +23,8 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "When arguments conflict, the last one is applied, so e.g. \"dl f F urlA\" downloads urlA without creating a folder."
  echo
  wrap "General options:"
- wrap "m: Download as audio only and convert to MP3. Set by default for SoundCloud."
- wrap "M: Download as video and convert to MP4. Set by default for everything except SoundCloud."
+ wrap "m: Download as audio only and convert to MP3. Set by default for SoundCloud and Bandcamp."
+ wrap "M: Download as video and convert to MP4. Set by default for everything except SoundCloud and Bandcamp."
  wrap "r: Limit resolution to 1080p. Always set by default. If both \"m\" and \"r\" are specified, \"m\" takes precedence."
  wrap "R: Download the best quality. Never set by default."
  wrap "These apply to everything on their level and below. For example \"dl m urlA urlB M urlC\" downloads urlA and urlC as music and urlB as video. Every line in a file can override the parameters for the entire file, which then only applies to that line."
@@ -42,7 +42,8 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "These comment indicators come from various programming languages and markdown formats. If you are used to a comment syntax that is not listed here, open an issue at: \e[34mhttps://github.com/Fabian42/bash_scripts/issues\e[0m"
  echo
  wrap "Files and playlists get expanded until only URLs are left, passing on the current m/M and r/R state."
- wrap "The script tries to be smart. For example all folders in \$CDPATH are searched and IDs instead of full URLs often work."
+ wrap "All folders in \$CDPATH are searched for files, additionally to the current folder."
+ wrap "IDs of YouTube, Vimeo and Imgur videos, SoundCloud and BandCamp tracks and BandCamp albums can be used instead of full URLs."
  wrap "English, German and Japanese non-automatic subtitles are included in video downloads."
  wrap "yt-dlp and FFMPEG are both set to silent except for the progress indicator, in the ideal case the only output left at the end are success messages from the script. Errors and some warnings will still appear."
  echo

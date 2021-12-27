@@ -345,8 +345,12 @@ search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i "$1";}
 here(){ find . -iwholename "*$1*" | sort | grep -i "$1";}
 # same as above, but as root
 shere(){ sudo find . -iwholename "*$1*" | grep -i "$1";}
-# plays all track from my music collection randomly with VLC that match the search term and exits the console
-p(){ (vlc --play-and-exit -Z $(find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* -iname "*$1*") &> /dev/null & disown); exit;}
+# play all tracks from my music collection randomly with VLC that match the search terms and close the console
+p(){
+ if [[ "$1" == "" ]]; then set "*"; fi
+ (vlc --play-and-exit -Z $(for term in "$@"; do find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* -iname "*$term*"; done) &> /dev/null & disown)
+ exit
+}
 # trash all files for search term
 delhere(){ IFS=$'\n'; del "$(here "$1")";}
 
@@ -485,8 +489,9 @@ about(){
 #  fi
 # }
 
-# temporary download command
+# temporary download commands
 alias dlp="yt-dlp -f \"bv*[height<=?1080]+ba/b[height<=?1080]/22/18\" --check-formats --sub-lang \"ja,ja-JP,de,de-DE,en-US,en,en-GB\" --embed-subs"
+dlm(){ youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
 
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
