@@ -170,7 +170,7 @@ scr(){
   sudo chmod -R 777 "$1.sh"
   echo "#!/bin/bash\nsource /home/fabian/hdd/d/programs/bash_scripts/sane" > "$1.sh"
  fi
- nano -lL +2 "$1.sh"
+ nano -lL +3 "$1.sh"
 }
 # execute scripts with aliases and functions in .bashrc
 alias e="source"
@@ -345,10 +345,14 @@ search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i "$1";}
 here(){ find . -iwholename "*$1*" | sort | grep -i "$1";}
 # same as above, but as root
 shere(){ sudo find . -iwholename "*$1*" | grep -i "$1";}
-# play all tracks from my music collection randomly with VLC that match the search terms and close the console
+# Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
- if [[ "$1" == "" ]]; then set "*"; fi
- (vlc --play-and-exit -Z $(for term in "$@"; do find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* -iname "*$term*"; done) &> /dev/null & disown)
+ if [[ "$1" == "" ]]; then
+  files="$(find $drive/m/a1/* $drive/m/a2/* $drive/m/a3/* $drive/m/a4/* | sort -u)"
+ else
+  files="$(find $drive/m/a0/* $drive/m/a1/* $drive/m/a2/* $drive/m/a3/* $drive/m/a4/* -iname "*$1*" | sort -u)"
+ fi
+ (vlc --play-and-exit -Z $files &> /dev/null & disown)
  exit
 }
 # trash all files for search term
@@ -399,8 +403,8 @@ alias now="date \"+%H:%M:%S\""
 # output matching lines from this file
 alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
 # package history
-pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg;}
-pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
+pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git;}
+pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\[ALPM\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
 # maximum temperature of any component
 alias sen="sensors iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+\\\\°C\" | grep -oE \"[0-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
 # watch maximum temperature
@@ -433,11 +437,11 @@ about(){
  packs="$(ech "$* $(pacman -Qoq "$@")" | tr " " "\n" | sort -u)";
  for i in $packs; do echo $i; done
  # a big section of general package information
- pacman -Qii $packs | grep -e "" -e "Version         : " -e "Depends On      : ";
+ pacman -Qii $packs | grep -E -e "" -e "Description     \\: .+" -e "Required By     \\: .+";
  for pack in $packs; do
   echo "\nPackages that depend on $pack: $(pactree -lr $pack | sort -u | tr "\n" " ")";
  done;
- echo "\nEnter \"q\" or press Ctrl+Shift+Esc to exit, anything else for owned files and search";
+ echo "\nEnter \"q\" or press Ctrl+Esc to exit, anything else for owned files and search";
  # wait for Enter
  read a;
  if [[ "$a" == "q" ]]; then return; fi

@@ -1,5 +1,7 @@
 #!/bin/bash
 source /home/fabian/hdd/d/programs/bash_scripts/sane
+# This script helps filling my Corona sheet: docs.google.com/spreadsheets/d/1uDTghO_ZYBs5nfs2kDc0Ms6e9bbx7clx_QgkWii7OMY
+# It parses various online sources and then either copies the entire data column into the clipboard or displays the latest value.
 # Feedback: fabianroeling@googlemail.com
 
 worldometers(){
@@ -63,7 +65,7 @@ vaccination_at=$(echo -n "$page" | grep "Austria" | tail -n +112 | sed "s/([^\,]
 # vaccination Saxony
 # temporary file, because "7z -si" seems broken
 wget -qO /tmp/co "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Impfquotenmonitoring.xlsx?__blob=publicationFile"
-vaccination_saxony=$(7z e -so /tmp/co xl/worksheets/sheet2.xml | grep -Eo "r\=\"F16\" s\=\"[0-9]+\"><v>[0-9]+" | sed "s/r\=\"F16\" s\=\"[0-9]+\"><v>//")
+vaccination_saxony=$(7z e -so /tmp/co xl/worksheets/sheet3.xml | grep -Eo "r\=\"J16\" s\=\"[0-9]+\"><v>[0-9]+" | sed "s/r\=\"J16\" s\=\"[0-9]+\"><v>//")
 rm /tmp/co
 
 # cases Germany, world, Austria
