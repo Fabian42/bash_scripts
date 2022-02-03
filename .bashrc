@@ -360,9 +360,9 @@ delhere(){ IFS=$'\n'; del "$(here "$1")";}
 
 ## Minecraft
 # filter latest Minecraft log
-log(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
+log2(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log2(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " | grep -i "$1" | sed "s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -v -E -e "^<[A-Za-z0-9\\_\\-]+> (io|oi)$" -e "^Now leaving " -e "^Now entering " | grep -i "$1";}
+log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " | grep -i "$1" | sed "s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -v -E -e "^<[A-Za-z0-9\\_\\-]+> (io|oi)$" -e "^Now leaving " -e "^Now entering " | grep -i "$1";}
 # use all items on a full hotbar
 alias hotbar="xdotool getactivewindow windowminimize; for slot in {1..9}; do for i in {1..64}; do xdotool click 1; done; xdotool click 5; done; q"
 # play Slicedlime stream in VLC

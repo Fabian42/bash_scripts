@@ -58,9 +58,9 @@ fi
 # vaccination de, world, at
 page=$(wget -qO - "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv")
 # get area-specific rows, start at 2021-04-17, extract 6th column
-vaccination_de=$(echo -n "$page" | grep "Germany" | tail -n +112 | sed "s/([^\,]+\,){5}([^\,]+)\,.+/\2/")
-vaccination_world=$(echo -n "$page" | grep "World" | tail -n +137 | sed "s/([^\,]+\,){5}([^\,]+)\,.+/\2/")
-vaccination_at=$(echo -n "$page" | grep "Austria" | tail -n +112 | sed "s/([^\,]+\,){5}([^\,]+)\,.+/\2/")
+vaccination_de=$(echo -n "$page" | grep "Germany" | tail -n +112 | sed "s/([^\,]+\,){5}([^\,]*)\,.+/\2/")
+vaccination_world=$(echo -n "$page" | grep "World" | tail -n +137 | sed "s/([^\,]+\,){5}([^\,]*)\,.+/\2/")
+vaccination_at=$(echo -n "$page" | grep "Austria" | tail -n +112 | sed "s/([^\,]+\,){5}([^\,]*)\,.+/\2/")
 
 # vaccination Saxony
 # temporary file, because "7z -si" seems broken
