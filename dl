@@ -8,16 +8,16 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "WARNING: This script is currently getting refactored. This help text is ahead of development."
  wrap "Downloads something using youtube-dlp."
  echo "Usage:"
- tablewrap "dl [-[-]|/](h[elp]|?)" "Shows this help."\
+ tablewrap "dl [-[-]|/](h[elp]|?)" "Shows this help. Example: dl --help"\
            "dl [m|n|N|r|\e[3mINDEX\e[0m]…" "Downloads WL into Downloads or, with \"m\", temp_music into t."\
            "dl [f|F|m|M|n|N|r|R]… (\e[3mFILE\e[0m|\e[3mURL\e[0m [f|F|m|M|n|N|r|R|\e[3mINDEX\e[0m]…)…" "Downloads all \e[3mURL\e[0ms listed as arguments or in \e[3mFILE\e[0ms with yt-dlp."
  echo
  wrap "Context-specific options:"
  wrap "f: Create subfolders and download into them. Never set by default."
  wrap "F: Do not create subfolders. Always set by default, so only useful to overwrite e.g. Bash aliases that specify \"f\"."
- wrap "n: Number entries. Set by default for playlists."
- wrap "N: Do not number entries. Set by default for files and videos/tracks."
- wrap "One number can be specified as a starting \e[3mINDEX\e[0m, a second one as an ending \e[3mINDEX\e[0m. Those indices are line numbers if the entry is a file and a playlist index if it is a URL. A third and further numbers do nothing."
+ wrap "n: Number entries. Set by default for playlist URLs."
+ wrap "N: Do not number entries. Set by default for files and video/track URLs."
+ wrap "One number can be specified as a starting \e[3mINDEX\e[0m, a second one as an ending \e[3mINDEX\e[0m. Those indices are line numbers, if the entry is a file, or a playlist index, if it is a URL. A third and further numbers do nothing."
  wrap "These apply to the level where they are specified, for example \"dl n fileA fileB\" prepends all video filenames that come from fileA with \"0001_\" and all filenames from fileB with \"0002_\". \"dl fileA n fileB\" prepends the video from the first line of fileA with \"0001_\", the video from the second line of fileA with \"0002_\" and the videos from fileB with nothing. \"dl f plA plB\" creates two folders, named after the playlists behind plA and plB, and the video files will be put into those respective folders. \"dl fileA f\" creates one folder per line in fileA."
  wrap "If these are used on multiple levels, then numbers for lower levels will come after numbers for higher levels and folders for lower levels will be inside folders for higher levels, for example \"dl n fileA n fileB\" will create videos with names like \"0001_0001_…\", \"0001_0002_…\", \"0001_0003_…\", … from fileA and videos with names like \"0002_…\" from fileB."
  wrap "When arguments conflict, the last one is applied, so e.g. \"dl f F urlA\" downloads urlA without creating a folder."
@@ -25,15 +25,11 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "General options:"
  wrap "m: Download as audio only and convert to MP3. Set by default for SoundCloud and Bandcamp."
  wrap "M: Download as video and convert to MP4. Set by default for everything except SoundCloud and Bandcamp."
- wrap "r: Limit resolution to 1080p. Always set by default. If both \"m\" and \"r\" are specified, \"m\" takes precedence."
+ wrap "r: Limit resolution to 1080p. Always set by default. If both \"m\" and \"r\"/\"R\" are specified, \"m\" takes precedence."
  wrap "R: Download the best quality. Never set by default."
  wrap "These apply to everything on their level and below. For example \"dl m urlA urlB M urlC\" downloads urlA and urlC as music and urlB as video. Every line in a file can override the parameters for the entire file, which then only applies to that line."
  wrap "When arguments conflict, the last one is applied, so e.g. \"dl m M urlA\" downloads urlA as video."
- echo
  wrap "Spaces between arguments are not necessary if the meaning is clear, so e.g. \"5fNR7\" works. \"m24\" would download index 24 and above as music, not 2 to 4."
- wrap "Each line in a file works just like another \"dl\" command, so for example an empty line downloads WL, files can reference other files and multiple URLs can be given on one line. But the usual usecase is just a list of one link/ID per line."
- wrap "To specify a file that could be interpreted as other arguments, use a path: \"./m\""
- wrap "To specify a YouTube ID that could be interpreted as other arguments, use a URL: youtu.be/fFmMnNrR059"
  echo
  wrap "All lines in a given file are skipped that begin with any amount (including none) of whitespace and then one of these (case-insensitive):"
  echo "# / \\ * ; % ! | ( { = ¢ £ ⍝ :: <# \$! \$\$ {- @c R: NB. ''' \"\"\" <!-- --[[ --[="
@@ -41,9 +37,15 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "Comments starting with REM, -- and a few others are not supported because YouTube IDs could start with those. Comments starting with \" or ' are not supported because they can be used to prevent word splitting."
  wrap "These comment indicators come from various programming languages and markdown formats. If you are used to a comment syntax that is not listed here, open an issue at: \e[34mhttps://github.com/Fabian42/bash_scripts/issues\e[0m"
  echo
+ wrap "Each line in a file works just like another \"dl\" command, with the following exceptions:"
+ wrap "· Empty and commented out lines (see below) are ignored."
+ wrap "· If the first (not empty or commented out) line can be parsed completely as \"dl\" arguments ([m|n|N|r|\e[3mINDEX\e[0m]…), those will be applied to the entire file and the first line on its own does nothing."
+ wrap "· Writing the \"dl \" part is not necessary. If it's done anyway, it works just the same as without. This might be useful as a workaround in edge cases."
+ wrap "Recursion does work and is how this script works anyway, so files can reference other files, just like playlist-like things on YouTube and SoundCloud can contain other playlist-like things."
  wrap "Files and playlists get expanded until only URLs are left, passing on the current m/M and r/R state."
  wrap "All folders in \$CDPATH are searched for files, additionally to the current folder."
- wrap "IDs of YouTube, Vimeo and Imgur videos, SoundCloud and BandCamp tracks and BandCamp albums can be used instead of full URLs."
+ wrap "IDs of YouTube, Vimeo and Imgur videos, SoundCloud and BandCamp tracks and BandCamp albums can be used instead of full URLs. If the ID looks just like other arguments could, use a full URL instead: youtu.be/fFmMnNrR059"
+ wrap "To specify a file that could be interpreted as other arguments, use a path: \"./m\""
  wrap "English, German and Japanese non-automatic subtitles are included in video downloads."
  wrap "yt-dlp and FFMPEG are both set to silent except for the progress indicator, in the ideal case the only output left at the end are success messages from the script. Errors and some warnings will still appear."
  echo

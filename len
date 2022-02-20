@@ -1,6 +1,9 @@
 #!/bin/bash
 source /home/fabian/hdd/d/programs/bash_scripts/sane
 
+# split arguments and on \n, but not on spaces, disable * expansion
+IFS=$'\n'
+set -f
 if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "Counts characters in a string. Like \"wc -m\", but without counting escape sequences."
  wrap "Only the longest line length will be returned, in case of line breaks or multiple arguments."
@@ -12,9 +15,7 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  exit
 fi
 max=0
-# split arguments and on \n, but not on spaces, loop over lines
-IFS=$'\n'
-for line in $(echo "$*"); do
+for line in $(echo $*); do
  arr=($(echo -n "$line" | sed "s/(.)/\\1\\n/g"))
  esc=0
  for((pos=0; pos<${#arr[@]}; pos++)); do

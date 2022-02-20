@@ -1,8 +1,11 @@
 #!/bin/bash
 source /home/fabian/hdd/d/programs/bash_scripts/sane
-# Once the bug in coreutils is fixed that causes escape sequences to be included in character counts, this entire script can be replaced with just this:
-# for line in $(echo "$*"); do echo "$line" | fold -sw$(tput cols); done
+# Once the bug in coreutils is fixed that causes escape sequences to be included in character counts, this entire script (except for the width argument, which has to replace "$(tput cols)") can be replaced with just this:
+# IFS=$'\n'; for line in $*; do echo $line | fold -sw$(tput cols); done
 
+# split between arguments and on \n, but not on spaces, disable * expansion
+IFS=$'\n'
+set -f
 if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  # Ooohh, recursion! Should be fine, because none of these lines is "--help" or similar.
  wrap "Wraps a text on spaces. A width after which to wrap can be given as first argument, the default is the console's width."
@@ -17,14 +20,13 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap 10 "a bc defff  ghij kp u\e[101mvwx yzä  öüßlmnopqrstuvwxyzäöüßx a\e[0m"
  exit
 fi
-width=$(tput cols)
 if [[ "$1" =~ ^[0-9]+$ ]]; then
  if(($1!=0)); then width=$1; fi
  shift
+else
+ width=$(tput cols)
 fi
-# split between arguments and on \n, but not on spaces, loop over lines
-IFS=$'\n'
-for line in $(echo "$*"); do
+for line in $*; do
  arr=($(echo -n "$line" | sed "s/(.)/\\1\\n/g"))
  line_start=0
  space_pos=-1

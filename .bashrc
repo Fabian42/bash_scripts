@@ -333,6 +333,8 @@ mp3(){
 
 # usual Git workflow to upload local changes
 alias commit="git diff; git add .; git status; read -p \"Press Enter to continue.\"; git commit --no-status; git push"
+# print subtitles from video
+subs(){ ffmpeg -i "$1" -map 0:s:0 -f srt - -v 16 | grep -v -E -e "^[0-9\\:\\,]{12} \\-\\-> [0-9\\:\\,]{12}$" -e "^[0-9]+$" -e "^$" | sed "s/\\\\h//g"; }
 
 ## searches
 # search console history
@@ -352,7 +354,7 @@ p(){
  else
   files="$(find $drive/m/a0/* $drive/m/a1/* $drive/m/a2/* $drive/m/a3/* $drive/m/a4/* -iname "*$1*" | sort -u)"
  fi
- (vlc --play-and-exit -Z $files &> /dev/null & disown)
+ (prime-run vlc --play-and-exit -Z $files &> /dev/null & disown)
  exit
 }
 # trash all files for search term
@@ -366,7 +368,7 @@ log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-
 # use all items on a full hotbar
 alias hotbar="xdotool getactivewindow windowminimize; for slot in {1..9}; do for i in {1..64}; do xdotool click 1; done; xdotool click 5; done; q"
 # play Slicedlime stream in VLC
-sl(){ vlc --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
+sl(){ prime-run vlc --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # get a window ID for a multiplayer Minecraft window
 mc(){
  for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)"); do
