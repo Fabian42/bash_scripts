@@ -4,14 +4,17 @@ source /home/fabian/hdd/d/programs/bash_scripts/sane
 # Prints further lines with indent 2 if the text can't fit in proper tabulated form.
 
 # find longest left side
-for((i=1; i<$#; i+=2)); do args+=("${!i}"); done
-l_len=$(($(len "${args[@]}")+2))
-r_len=$(($(tput cols)-$l_len))
+for((i=1; i<$#; i+=2)); do
+ curr=$(len "${!i}")
+ ((l_len=curr>l_len?curr:l_len))
+done
+((l_len+=2))
+r_len=$(($(tput cols)-l_len))
 # set alignment width
 tabs $l_len
-# enoughspace in terminal for right side?
-if (($l_len<$(tput cols))); then
- while(($# > 0)); do
+# enough space in terminal for right side?
+if ((l_len<$(tput cols))); then
+ while(($#>0)); do
   # print left side
   echo -n "$1"
   shift
@@ -21,7 +24,7 @@ if (($l_len<$(tput cols))); then
  done
 else
  # fallback to indentation 2
- while(($# > 0)); do
+ while(($#>0)); do
   wrap $(($(tput cols)-2)) "$1  $2" | sed "1 ! s/^/  /g"
   shift 2
  done
