@@ -1,0 +1,17 @@
+# shut up and just work
+-q --no-warnings -R infinite --fragment-retries infinite --extractor-retries infinite --default-search auto
+# playback can begin immediately
+#--downloader ffmpeg --downloader-args "FFMPEG:-v 16 -stats"
+# YT login
+--cookies-from-browser firefox --mark-watched
+# sane filenames
+-o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part
+# potentially multiple tracks for SpaceX streams?
+--video-multistreams --audio-multistreams
+# potential adblock
+#--sponsorblock-remove "sponsor,selfpromo,interaction,preview,music_offtopic" --sponsorblock-mark all
+# chapters
+--embed-chapters
+# delete progress bar after download has finished, using black magic
+#--exec "echo \"\033[A\033[2K%(epoch>%H:%M:%S)s %(filepath)s\""
+--exec "echo \"%(epoch>%H:%M:%S)s %(filepath)s\""

@@ -15,7 +15,7 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  exit
 fi
 max=0
-for line in $(echo $*); do
+for line in $*; do
  arr=($(echo -n "$line" | sed "s/(.)/\\1\\n/g"))
  esc=0
  for((pos=0; pos<${#arr[@]}; pos++)); do
