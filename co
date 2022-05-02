@@ -61,12 +61,6 @@ page=$(wget -qO - "https://raw.githubusercontent.com/owid/covid-19-data/master/p
 vaccination_de=$(echo -n "$page" | grep "Germany" | tail -n +112 | sed "s/([^\,]*\,){5}([^\,]*)\,.*/\2/")
 vaccination_world=$(echo -n "$page" | grep "World" | tail -n +137 | sed "s/([^\,]*\,){5}([^\,]*)\,.*/\2/")
 
-# vaccination Saxony
-# temporary file, because "7z -si" seems broken
-wget -qO /tmp/co "https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Daten/Impfquotenmonitoring.xlsx?__blob=publicationFile"
-vaccination_saxony=$(7z e -so /tmp/co xl/worksheets/sheet3.xml | grep -Eo "r\=\"J16\" s\=\"[0-9]+\"><v>[0-9]+" | sed "s/r\=\"J16\" s\=\"[0-9]+\"><v>//")
-rm /tmp/co
-
 # cases Germany, world, Austria
 cases_de=$(worldometers "/country/germany" 428)
 cases_world=$(worldometers "" 452)
@@ -77,29 +71,14 @@ if [[ $found == 0 ]]; then
  (firefox "www.altkreisblitz.de/region-hannover" &> /dev/null & disown)
 fi
 
-# output to clipboard for overwriting all or to console for appending one entry
-echo -n "$vaccination_de" | xclip -selection clipboard; echo "paste vaccination_de"
-weekday=$(qalc -t "weekday(today)" | sed "s/\\\"//g")
-if [[ $weekday == 5 ]]; then
- echo -n "$vaccination_saxony"", ""$vaccination_saxony"", ""$vaccination_saxony"; z
-else
- echo -n "$vaccination_saxony"; z
+# output to clipboard
+echo -n "$vaccination_world" | xclip -selection clipboard; echo -n "paste: vaccination_world"; z
+echo -n "$cases_de" | xclip -selection clipboard; echo -n "paste: cases_de"; z
+echo -n "$cases_world" | xclip -selection clipboard; echo -n "paste: cases_world"; z
+if [[ $(qalc -t "weekday(today)" | sed "s/\\\"//g") == 5 ]]; then
+ echo "×3"
 fi
-#echo -n "$vaccination_north_saxony"; z
-echo -n "$vaccination_world" | xclip -selection clipboard; echo -n "paste vaccination_world"; z
-echo -n "$cases_de" | xclip -selection clipboard; echo -n "paste cases_de"; z
-echo -n "$cases_world" | xclip -selection clipboard; echo "paste cases_world"
-if [[ $found == 1 ]]; then
- if [[ $weekday == 5 ]]; then
-  echo "$cases_hannover"", ""$cases_hannover"", ""$cases_hannover"
-  echo -n "$cases_lehrte"", ""$cases_lehrte"", ""$cases_lehrte"
- else
-  echo "$cases_hannover"
-  echo -n "$cases_lehrte"
- fi
-else
- echo -n "copy, copy (or see above)"
-fi
-z
-echo -n "$cases_at" | xclip -selection clipboard; echo "paste cases_at"
+echo -n "$cases_hannover" | xclip -selection clipboard; echo -n "paste at end: cases_hannover"; z
+echo -n "$cases_lehrte" | xclip -selection clipboard; echo -n "paste at end: cases_lehrte"; z
+echo -n "$cases_at" | xclip -selection clipboard; echo "paste: cases_at"
 xdotool key q sleep 0.1 key return

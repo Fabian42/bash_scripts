@@ -193,7 +193,7 @@ alias systemctl="systemctl --no-pager"
 # make help pages actually print to STDOUT properly
 alias man="man -P cat"
 # original quality and correct colours for PNGs
-alias convert="convert -quality 0 -strip"
+alias convert="convert -quality 100 -strip"
 # don't interrupt tasks with Ctrl+C
 stty intr ^-
 # don't suspend tasks with Ctrl+S
@@ -377,11 +377,15 @@ mc(){
    break
   fi
  done
- }
+}
+# launch Minecraft with minimum settings and CPU limit to keep video chats working
+mn(){ c c; rm options.txt; cp options_min.txt options.txt; cpulimit -l 600 -i prime-run /usr/bin/minecraft-launcher & xdotool key q sleep 0.1 key return; }
+# launch Minecraft with maximum settings
+mx(){ c c; rm options.txt; cp options_max.txt options.txt; prime-run /usr/bin/minecraft-launcher & xdotool key q sleep 0.1 key return;}
 
 ## miscellaneous
 # print public IP addresses
-alias myip="wget -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
+alias myip="wget -T3 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
 # quit
 alias q="exit"
 # forget commands starting with a space
@@ -393,7 +397,7 @@ shopt -s cdspell
 # switching to directories without "cd"
 shopt -s autocd
 # ignore consecutive duplicate commands, anything that starts with a space and some specific commands in history and up-arrow list
-HISTIGNORE="&: :q:q *:aka:kde:win:pulse:blu"
+HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu"
 # Only split on newlines for "for" loops, not on spaces from now on.
 alias nl="IFS=$'\n'"
 # Uninstallation by package or command name, also deletes files
@@ -457,6 +461,9 @@ about(){
  done;
 }
 
+# Jisho search with (almost) no limit
+alias ji="jisho -n999"
+
 # # Shortcut for youtube-dlp. For more info, run "dl --help".
 # dl(){
 #  if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ ]]; then
@@ -496,8 +503,11 @@ about(){
 # }
 
 # temporary download commands
-alias dlp="yt-dlp -f \"bv*[height<=?1080]+ba/b[height<=?1080]/22/18\" --check-formats --sub-lang \"ja,ja-JP,de,de-DE,en-US,en,en-GB\" --embed-subs"
+alias dlp="yt-dlp -f \"bv*[height<=?1080]+ba/b[height<=?1080]/22/18\" --check-formats --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja\" --embed-subs"
 dlm(){ youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
+
+# fix internet
+alias net="nmcli dev wifi connect Weelaan; q"
 
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)

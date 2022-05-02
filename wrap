@@ -3,8 +3,9 @@ source /home/fabian/hdd/d/programs/bash_scripts/sane
 # Once the bug in coreutils is fixed that causes escape sequences to be included in character counts, this entire script (except for the width argument, which has to replace "$(tput cols)") can be replaced with just this:
 # IFS=$'\n'; for line in $*; do echo $line | fold -sw$(tput cols); done
 
-# split between arguments and on \n, but not on spaces, disable * expansion
+# split between arguments and on \n, but not on spaces
 IFS=$'\n'
+# disable * expansion
 set -f
 if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  # Ooohh, recursion! Should be fine, because none of these lines is "--help" or similar.

@@ -1,8 +1,9 @@
 #!/bin/bash
 source /home/fabian/hdd/d/programs/bash_scripts/sane
 
-# split arguments and on \n, but not on spaces, disable * expansion
+# split arguments and on \n, but not on spaces
 IFS=$'\n'
+# disable * expansion
 set -f
 if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "Counts characters in a string. Like \"wc -m\", but without counting escape sequences."
