@@ -8,5 +8,8 @@ while clipnotify; do
  # remove trash from copies Twitch clip links
  elif [[ "$new" == "https://www.twitch.tv/"*"/clip/"* ]]; then
   echo -n "$new" | sed "s/\\?filter\\=clips\\&range\\=all\\&sort\\=time//g" | xsel -bi
+ else
+  # ensure that clipboard doesn't get cleared when closing a program
+  echo -n "$new" | xsel -bi
  fi
 done
