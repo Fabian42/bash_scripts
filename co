@@ -76,10 +76,12 @@ echo -n "$vaccination_de" | xclip -selection clipboard; echo -n "paste: vaccinat
 echo -n "$vaccination_world" | xclip -selection clipboard; echo -n "paste: vaccination_world"; z
 echo -n "$cases_de" | xclip -selection clipboard; echo -n "paste: cases_de"; z
 echo -n "$cases_world" | xclip -selection clipboard; echo -n "paste: cases_world"; z
-if [[ $(qalc -t "weekday(today)" | sed "s/\\\"//g") == 5 ]]; then
- echo "×3"
+if [[ $found == 1 ]]; then
+ if [[ $(qalc -t "weekday(today)" | sed "s/\\\"//g") == 5 ]]; then
+  echo "×3"
+ fi
+ echo -n "$cases_hannover" | xclip -selection clipboard; echo -n "paste at end: cases_hannover"; z
+ echo -n "$cases_lehrte" | xclip -selection clipboard; echo -n "paste at end: cases_lehrte"; z
 fi
-echo -n "$cases_hannover" | xclip -selection clipboard; echo -n "paste at end: cases_hannover"; z
-echo -n "$cases_lehrte" | xclip -selection clipboard; echo -n "paste at end: cases_lehrte"; z
 echo -n "$cases_at" | xclip -selection clipboard; echo "paste: cases_at"
 xdotool key q sleep 0.1 key return
