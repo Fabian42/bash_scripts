@@ -24,7 +24,7 @@ z(){
 
 # Hannover and Lehrte (first because of highest probability of failure)
 # This breaks if 20 or more articles were published today after the Corona update. I could fix that, but it's extremely unlikely. Changes to the website break stuff way more often.
-# In case of a missed day: Replace »$(date "+%Y\\/%m\\/%d")« with e.g. »2021\\/04\\/17«
+# In case of a missed day: Replace »$(date "+%Y\\/%m\\/%d")« with e.g. »2022\\/05\\/30«
 links=$(wget --no-check-certificate -qO - "www.altkreisblitz.de/region-hannover" | grep -E "<div class\\=\\\"news\\-list\\-item\\-title\\\"><h2><a href\\=\\\"https\\:\\/\\/www\\.altkreisblitz\\.de\\/aktuelles\\/datum\\/$(date "+%Y\\/%m\\/%d")" | grep -Eo "https[^\\\"]+")
 found=0
 for link in $links; do # $links not quoted, because that makes it only one long string

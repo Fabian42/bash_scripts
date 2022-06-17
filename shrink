@@ -72,6 +72,7 @@ output(){
  exit
 }
 
+in_size=$(stat --printf="%s" "$in")
 if((in_size<limit)); then
  echo "Input is already below limit!"
  out="$in"
@@ -80,7 +81,6 @@ fi
 
 ### MAIN PART
 
-in_size=$(stat --printf="%s" "$in")
 echo "Input file size: $in_size"
 
 while true; do

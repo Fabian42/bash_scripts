@@ -139,7 +139,7 @@ alias bandwhich="sudo bandwhich"
 # sudo make me a downgrade sandwhich
 alias downgrade="sudo downgrade"
 # fix broken updates
-alias magic="sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable && sudo pacman-key --refresh-keys; yay -Scc && yay -Syyu"
+alias magic="sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable && sudo pacman-key --refresh-keys; yay -Scc && yay -Syyu; search pacnew"
 # only the cleaning part of the above
 alias space="echo \"y\nn\ny\n\" | yay -Scc"
 # fix iMage "unable to write pixel cache" on large images
@@ -191,7 +191,7 @@ alias journalctl="journalctl --no-pager"
 # normal output of systemctl
 alias systemctl="systemctl --no-pager"
 # make help pages actually print to STDOUT properly
-alias man="man -P cat"
+alias man="echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" | man -a -P cat"
 # original quality and correct colours for PNGs
 alias convert="convert -quality 100 -strip"
 # don't interrupt tasks with Ctrl+C
