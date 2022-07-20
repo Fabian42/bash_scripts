@@ -72,7 +72,8 @@ if [[ $found == 0 ]]; then
 fi
 
 # output to clipboard
-echo -n "$vaccination_de" | xclip -selection clipboard; echo -n "paste: vaccination_de"; z
+echo -n "$vaccination_de" | xclip -selection clipboard; echo -n "paste: vaccination_de"
+notify-send -t 1000 "Start!"; z
 echo -n "$vaccination_world" | xclip -selection clipboard; echo -n "paste: vaccination_world"; z
 echo -n "$cases_de" | xclip -selection clipboard; echo -n "paste: cases_de"; z
 echo -n "$cases_world" | xclip -selection clipboard; echo -n "paste: cases_world"; z

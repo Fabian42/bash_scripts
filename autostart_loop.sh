@@ -13,9 +13,10 @@ while true; do
   fi
   if((i==60)); then
    # notify if KDE connect can't reach phone
-   if ! kdeconnect-cli -l | grep "paired and reachable"; then
-    notify-send -t 59000 "KDE connect died"
-   fi
+   #if ! kdeconnect-cli -l | grep "paired and reachable"; then
+    #notify-send -t 59000 "KDE connect died"
+    #killall kdeconnectd; /usr/lib/kdeconnectd &> /dev/null & disown
+   #fi
    # replace muted volume with volume 0 so that volume up keys work again
    if pulseaudio-ctl full-status | grep -E "[0-9]+ yes" >/dev/null; then
     pactl set-sink-volume @DEFAULT_SINK@ 0

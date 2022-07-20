@@ -241,7 +241,8 @@ alias g="c /home/fabian/hdd/d/programs/bash_scripts"
 
 # visually confirmed deletion to trash
 del(){
- for file in "$@"; do
+ IFS=$'\n'
+ for file in $@; do
   if [ -e "/home/fabian/.local/share/Trash/files/$(basename "$file")" ]; then
    a=1
    while [ -e "/home/fabian/.local/share/Trash/files/$(basename "$file") ($a)" ]; do
@@ -358,13 +359,13 @@ p(){
  exit
 }
 # trash all files for search term
-delhere(){ IFS=$'\n'; del "$(here "$1")";}
+delhere(){ del $(here "$1");}
 
 ## Minecraft
 # filter latest Minecraft log
 log2(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " | grep -i "$1" | sed "s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -v -E -e "^<[A-Za-z0-9\\_\\-]+> (io|oi)$" -e "^Now leaving " -e "^Now entering " | grep -i "$1";}
+log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -v -E -e "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi)$" | grep -i "$1";}
 # use all items on a full hotbar
 alias hotbar="xdotool getactivewindow windowminimize; for slot in {1..9}; do for i in {1..64}; do xdotool click 1; done; xdotool click 5; done; q"
 # play Slicedlime stream in VLC
@@ -379,9 +380,9 @@ mc(){
  done
 }
 # launch Minecraft with minimum settings and CPU limit to keep video chats working
-mn(){ c c; rm options.txt; cp options_min.txt options.txt; cpulimit -l 600 -i prime-run /usr/bin/minecraft-launcher & xdotool key q sleep 0.1 key return; }
+mn(){ c c; rm options.txt; cp options_min.txt options.txt; cpulimit -l 600 -i prime-run /usr/bin/minecraft-launcher & xdotool key q key return; }
 # launch Minecraft with maximum settings
-mx(){ c c; rm options.txt; cp options_max.txt options.txt; prime-run /usr/bin/minecraft-launcher & xdotool key q sleep 0.1 key return;}
+mx(){ c c; rm options.txt; cp options_max.txt options.txt; prime-run /usr/bin/minecraft-launcher & xdotool key q key return;}
 
 ## miscellaneous
 # print public IP addresses
@@ -409,7 +410,7 @@ alias now="date \"+%H:%M:%S\""
 # output matching lines from this file
 alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
 # package history
-pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git;}
+pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
 pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\[ALPM\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
 # maximum temperature of any component
 alias sen="sensors iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+\\\\°C\" | grep -oE \"[0-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
