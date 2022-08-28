@@ -150,8 +150,8 @@ alias kde="killall plasmashell; killall kdeconnectd; kstart5 plasmashell &> /dev
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case
 alias grep="grep -i --colour=auto"
-# repairs secondary Bluetooth tray icon
-alias blu="killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
+# repairs secondary Bluetooth tray icon and restarts Bluetooth
+alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
 # restart PulseAudio
 alias pulse="systemctl --user restart pulseaudio.service; exit"
 # stop microphone volume from changing randomly
@@ -195,9 +195,9 @@ alias man="echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" | man -a -P cat"
 # original quality and correct colours for PNGs
 alias convert="convert -quality 100 -strip"
 # don't interrupt tasks with Ctrl+C
-stty intr ^-
+stty intr ^- 2>/dev/null
 # don't suspend tasks with Ctrl+S
-stty -ixon
+stty -ixon 2>/dev/null
 # skip non-issues in shellcheck, list all links at bottom
 alias shellcheck="shellcheck --exclude=SC2164,SC2181,SC2028,SC2010,2002,SC2162 -W 9999"
 
@@ -335,7 +335,14 @@ mp3(){
 # usual Git workflow to upload local changes
 alias commit="git diff; git add .; git status; read -p \"Press Enter to continue.\"; git commit --no-status; git push"
 # print subtitles from video
-subs(){ ffmpeg -i "$1" -map 0:s:0 -f srt - -v 16 | grep -v -E -e "^[0-9\\:\\,]{12} \\-\\-> [0-9\\:\\,]{12}$" -e "^[0-9]+$" -e "^$" | sed "s/\\\\h//g"; }
+subs(){
+ stream=0
+ for lang in $(ffprobe "$1" 2>&1 | grep "Subtitle" | grep -Eo "  Stream \\#0\\:[0-9]+\\([a-z]+" | sed "s/  Stream \\#0\\:[0-9]+\\(//"); do
+  echo "\nSubtitles #"$stream", language: "$lang
+  ffmpeg -i "$1" -map 0:s:$stream -f srt - -v 16 | grep -v -E -e "^[0-9\:\,]{12} \-\-> [0-9\:\,]{12}$" -e "^[0-9]+$" -e "^$" | sed "s/\\h//g"
+  ((stream++))
+ done
+ }
 
 ## searches
 # search console history
@@ -365,11 +372,15 @@ delhere(){ del $(here "$1");}
 # filter latest Minecraft log
 log2(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -v -E -e "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi)$" | grep -i "$1";}
+log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -v -E -e "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi)$" | grep -i "$1";}
 # use all items on a full hotbar
-alias hotbar="xdotool getactivewindow windowminimize; for slot in {1..9}; do for i in {1..64}; do xdotool click 1; done; xdotool click 5; done; q"
+alias hotbar="xdotool getactivewindow windowminimize; for slot in {1..9}; do for i in {1..70}; do xdotool click --delay 0.1 1; done; xdotool click 5; done"
+# craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
+alias bones="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 1081 586 click 1 mousemove 1325 446 click 1 mousemove 1086 642 click 1 mousemove 1325 446 click 1 mousemove 1082 695 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1145 594 click 1 mousemove 1325 446 click 1 mousemove 1140 641 click 1 mousemove 1325 446 click 1 mousemove 1133 708 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1196 585 click 1 mousemove 1325 446 click 1 mousemove 1196 648 click 1 mousemove 1325 446 click 1 mousemove 1195 711 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1243 591 click 1 mousemove 1325 446 click 1 mousemove 1250 644 click 1 mousemove 1325 446 click 1 mousemove 1247 701 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1301 600 click 1 mousemove 1325 446 click 1 mousemove 1301 663 click 1 mousemove 1325 446 click 1 mousemove 1313 707 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1366 591 click 1 mousemove 1325 446 click 1 mousemove 1358 645 click 1 mousemove 1325 446 click 1 mousemove 1354 687 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1399 600 click 1 mousemove 1325 446 click 1 mousemove 1410 637 click 1 mousemove 1325 446 click 1 mousemove 1410 710 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
+# craft 9×3 mineral items into blocks
+alias coal="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # play Slicedlime stream in VLC
-sl(){ prime-run vlc --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
+sl(){ prime-run vlc --rate 1.01 --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # get a window ID for a multiplayer Minecraft window
 mc(){
  for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)"); do
@@ -413,9 +424,14 @@ alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
 pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
 pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\[ALPM\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
 # maximum temperature of any component
-alias sen="sensors iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+\\\\°C\" | grep -oE \"[0-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
+alias sen="sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+ C\" | grep -oE \"[0-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
 # watch maximum temperature
-alias sens="for i in {1..23}; do xdotool key Ctrl+plus; done; watch -tdn1 \"sensors -u iwlwifi_1-virtual-0 coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep \\\"\\\\\\\\_input\\\" | sed -E \\\"s/.+\\\\\\\\_input\\\\\\\\: //;s/\\\\\\\\..+//\\\" | sort -n | tail -1\""
+sens(){
+  for i in {1..23}; do
+  xdotool key Ctrl+plus
+ done
+ watch -tn1 "sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\+[0-9\.]+ C\" | grep -oE \"[0-9\\.]+\" | sed \"s/\\.[0-9]//\" | sort -n | tail -1"
+}
 
 # highlight parts of an output
 hl(){ 
@@ -510,6 +526,47 @@ dlm(){ youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite 
 # fix internet
 alias net="nmcli dev wifi connect Weelaan; q"
 
+# output live Ukraine newsticker and notify for filtered entries
+tagesschau(){
+ url=$(curl -s "https://www.tagesschau.de/thema/ukraine/" | grep -e "https://www.tagesschau.de/newsticker/liveblog-ukraine-" -e "https://www.tagesschau.de/ausland/europa/liveblog-ukraine-" | head -n 1 | grep -Eo "https\\:\\/\\/www\\.tagesschau\\.de\\/[a-z0-9\\/\\-]+")
+ curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
+ old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
+ whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear")
+ blacklist=(" fordert" " fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " " soll .* haben" " weis".*" zurück" "signalisier" "drängt auf")
+ while sleep 60; do
+  page="$(curl -s "$url""~rss2feed.xml")"
+  if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
+  new_time="$(echo "$page" | grep "<pubDate>" | head -n 1)"
+  if [[ "$new_time" != "$old_time" ]]; then
+   old_time="$new_time"
+   new_content="$(echo "$page" | head -n 16 | tail -n 4 | grep -v "pubDate" | sed "s/<\\/?[a-z]+>//g")"
+   title="$(echo "$new_content" | head -n 1)"
+   text="$(echo "$new_content" | tail -n 1)"
+   found_whitelist="false"
+   for regex in "${whitelist[@]}"; do
+    if echo "$title\n$text" | tr '[:upper:]' '[:lower:]' | grep -qE ".*$regex.*"; then
+     found_whitelist="true"
+     break
+    fi
+   done
+   if [[ "$found_whitelist" = "false" ]]; then
+    for regex in "${blacklist[@]}"; do
+     if echo "$title\n$text" | tr '[:upper:]' '[:lower:]' | grep -qE ".*$regex.*"; then
+      echo "\e[90m$new_content\e[0m\n"
+      continue 2 # don't notify, repeat main loop
+     fi
+    done
+   fi
+   echo "$new_content\n"
+   notify-send -u critical "$title"
+   if [[ "$title" = "Ende des Liveblogs" ]]; then return; fi
+  fi
+ done
+}
+
+# output help for formatting codes
+formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done; }
+
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
-echo "$(uptime -p) since $(uptime -s)", time: $(date "+%H:%M:%S")
+if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s)", time: $(date "+%H:%M:%S"); fi
