@@ -372,20 +372,18 @@ delhere(){ del $(here "$1");}
 # filter latest Minecraft log
 log2(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey)$" | grep -i "$1";}
+log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "hey" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -v -E -e "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi)$" | grep -i "$1";}
 # use all items on a full hotbar
 alias hotbar="xdotool getactivewindow windowminimize; for slot in {1..9}; do for i in {1..70}; do xdotool click --delay 0.1 1; done; xdotool click 5; done"
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
 alias bones="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 1081 586 click 1 mousemove 1325 446 click 1 mousemove 1086 642 click 1 mousemove 1325 446 click 1 mousemove 1082 695 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1145 594 click 1 mousemove 1325 446 click 1 mousemove 1140 641 click 1 mousemove 1325 446 click 1 mousemove 1133 708 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1196 585 click 1 mousemove 1325 446 click 1 mousemove 1196 648 click 1 mousemove 1325 446 click 1 mousemove 1195 711 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1243 591 click 1 mousemove 1325 446 click 1 mousemove 1250 644 click 1 mousemove 1325 446 click 1 mousemove 1247 701 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1301 600 click 1 mousemove 1325 446 click 1 mousemove 1301 663 click 1 mousemove 1325 446 click 1 mousemove 1313 707 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1366 591 click 1 mousemove 1325 446 click 1 mousemove 1358 645 click 1 mousemove 1325 446 click 1 mousemove 1354 687 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1399 600 click 1 mousemove 1325 446 click 1 mousemove 1410 637 click 1 mousemove 1325 446 click 1 mousemove 1410 710 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # craft 9×3 mineral items into blocks
 alias coal="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
-# break stacks of flint in slots, 1, 3-9 and offhand with a shovel in slot 2
-alias gravel="xdotool getactivewindow windowminimize; sleep 1; for slot in {1..9}; do for i in {1..70}; do xdotool key $slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
 # play Slicedlime stream in VLC
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # get a window ID for a multiplayer Minecraft window
 mc(){
- for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)"); do
+ for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)"); do
   if [[ ! "$(xdotool getwindowname "$id")" =~ .*CopyQ.* ]]; then
    echo "$id"
    break
@@ -534,8 +532,8 @@ tagesschau(){
  url=$(curl -s "https://www.tagesschau.de/thema/ukraine/" | grep -e "https://www.tagesschau.de/newsticker/liveblog-ukraine-" -e "https://www.tagesschau.de/ausland/europa/liveblog-ukraine-" | head -n 1 | grep -Eo "https\\:\\/\\/www\\.tagesschau\\.de\\/[a-z0-9\\/\\-]+")
  curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
  old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
- whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
- blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " soll .* haben" " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" "plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droh" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote " "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten ")
+ whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear")
+ blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " soll .* haben" " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" "kritisier" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" "plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen")
  while sleep 60; do
   page="$(curl -s "$url""~rss2feed.xml")"
   if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
@@ -549,7 +547,6 @@ tagesschau(){
    for regex in "${whitelist[@]}"; do
     if echo "$title\n$text" | tr '[:upper:]' '[:lower:]' | grep -qE ".*$regex.*"; then
      found_whitelist="true"
-     echo "Whitelist: $regex"
      break
     fi
    done
@@ -564,7 +561,7 @@ tagesschau(){
    fi
    echo "$new_content\n"
    notify-send -u critical "$title"
-   if [[ "$title" = "Ende des Liveblogs" || "$title" = "Ende des heutigen Liveblogs" ]]; then return; fi
+   if [[ "$title" = "Ende des Liveblogs" ]]; then return; fi
   fi
  done
 }

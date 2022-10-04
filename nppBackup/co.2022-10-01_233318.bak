@@ -25,7 +25,7 @@ z(){
 # Hannover and Lehrte (first because of highest probability of failure)
 # This breaks if 20 or more articles were published today after the Corona update. I could fix that, but it's extremely unlikely. Changes to the website break stuff way more often.
 # In case of a missed day: Replace »$(date "+%Y\\/%m\\/%d")« with e.g. »2022\\/05\\/30«
-links=$(wget --no-check-certificate -qO - "www.altkreisblitz.de/region-hannover" | grep -E "<div class\\=\\\"news\\-list\\-item\\-title\\\"><h2><a href\\=\\\"https\\:\\/\\/www\\.altkreisblitz\\.de\\/aktuelles\\/datum\\/$(date "+%Y\\/%m\\/%d")" | grep -Eo "https[^\\\"]+")
+links=$(wget --no-check-certificate -qO - "www.altkreisblitz.de/region-hannover" | grep -E "<div class\\=\\\"news\\-list\\-item\\-title\\\"><h2><a href\\=\\\"https\\:\\/\\/www\\.altkreisblitz\\.de\\/aktuelles\\/datum\\/2022\\/09\\/30" | grep -Eo "https[^\\\"]+")
 found=0
 for link in $links; do # $links not quoted, because that makes it only one long string
  page=$(wget -qO - "$link" | sed "s/\\r\\n?/\\n/g")
@@ -58,13 +58,13 @@ fi
 # vaccination de, world, at
 page=$(wget -qO - "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv")
 # get area-specific rows, start at 2021-04-17, extract 6th column
-vaccination_de="total\n"$(echo -n "$page" | grep "Germany" | tail -n +137 | sed "s/([^\,]*\,){6}([^\,]*)\,.*/\2/")
-vaccination_world="total\n"$(echo -n "$page" | grep "World" | tail -n +162 | sed "s/([^\,]*\,){6}([^\,]*)\,.*/\2/")
+vaccination_de="total\n"$(echo -n "$page" | grep "Germany" | tail -n +112 | sed "s/([^\,]*\,){5}([^\,]*)\,.*/\2/")
+vaccination_world="total\n"$(echo -n "$page" | grep "World" | tail -n +137 | sed "s/([^\,]*\,){5}([^\,]*)\,.*/\2/")
 
 # cases Germany, world, Austria
-cases_de="reported\n"$(worldometers "/country/germany" 453)
-cases_world="reported\n"$(worldometers "" 477)
-cases_at="reported\n"$(worldometers "/country/austria" 453)
+cases_de="reported\n"$(worldometers "/country/germany" 428)
+cases_world="reported\n"$(worldometers "" 452)
+cases_at="reported\n"$(worldometers "/country/austria" 428)
 
 # if not found, open page for manual check
 if [[ $found == 0 ]]; then

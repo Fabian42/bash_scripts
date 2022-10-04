@@ -41,7 +41,7 @@ else
   echo "Not an integer, try again or abort with Ctrl+Esc."
  done
 fi
-# If this is set to "true", the files that resulted from all the attempts except for the best one are deleted. If set to "false", they are kept. This does not guarantee that any specific file will exist (but it is predictable, for example if CRF 18 is the best, then the files with CRF 51, 25, 12, 18, 15, 16 and 17 will exist.
+# If this is set to "true", the files that resulted from all the attempts except for the best one are deleted. If set to "false", they are kept. This does not guarantee that any specific file will exist (but it is predictable, for example if CRF 18 is the best, then the files with CRF 51, 25, 12, 18, 15, 16 and 17 will exist).
 if [[ "$3" == "false" ]]; then
  delete_intermediate_results=false
 else
