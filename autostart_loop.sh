@@ -5,7 +5,7 @@ source /home/fabian/hdd/d/programs/bash_scripts/.bashrc
 xset -dpms
 xset s off
 
-copyq
+#copyq &
 
 while true; do
  for i in {1..60}; do
@@ -27,13 +27,13 @@ while true; do
    fi
   fi
   if((i%10==0)); then
-   notify-send -t 10000 "$(myip 2>/dev/null)"
+   #notify-send -t 10000 "$(myip 2>/dev/null)"
    if [[ "" == "$(myip 2>/dev/null)" ]]; then
     ((net_down++))
     if ((net_down%6==1)); then
      # repair internet by re-establishing connection, then don't do anything anymore for at least one minute
      notify-send -t 1000 "$(myip 2>/dev/null)"
-     #nmcli dev wifi connect Weelaan
+     nmcli dev wifi connect Weelaan
     fi
    else
     net_down=0
