@@ -9,3 +9,5 @@ alias sed="sed -E"
 cat(){ echo "$(/usr/bin/cat "$@")";}
 # escape sequences work in echo
 alias echo="echo -e"
+# don't warn for technically not necessary backslashes
+grep(){ /usr/bin/grep "$@" 2>/dev/null;}
