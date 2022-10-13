@@ -1,6 +1,8 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
 source /home/fabian/hdd/d/programs/bash_scripts/.bashrc
+brightness_file="/home/fabian/hdd/d/programs/bash_scripts/brightness.txt"
+brightness_setting="/sys/class/backlight/intel_backlight/brightness"
+
 # maybe disable screen off after 10 minutes
 xset -dpms
 xset s off
@@ -13,6 +15,10 @@ while true; do
   # disable caps
   if xset q | grep -q "Caps Lock:   on"; then
    xdotool key Caps_Lock
+  fi
+  # check if screen randomly turned itself on
+  if(($(cat $brightness_file)<417 && $(cat $brightness_file)!=$(cat $brightness_setting))); then
+   sudo su -c "cat $brightness_file > $brightness_setting"
   fi
   if((i==60)); then
    # notify if KDE connect can't reach phone

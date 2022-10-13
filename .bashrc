@@ -535,7 +535,7 @@ tagesschau(){
  curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
  old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
  whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
- blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " soll .* haben" " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" "plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droh" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote " "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche")
+ blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " soll .* haben" " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" "plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droh" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote " "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher.* zu")
  while sleep 60; do
   page="$(curl -s "$url""~rss2feed.xml")"
   if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
@@ -564,7 +564,7 @@ tagesschau(){
    fi
    echo "$new_content\n"
    notify-send -u critical "$title"
-   if [[ "$title" = "Ende des Liveblogs" || "$title" = "Ende des heutigen Liveblogs" ]]; then return; fi
+   if [[ "$title" = "Ende des Liveblogs" || "$title" = "Ende des heutigen Liveblogs" || "$title" = "Ende des Liveblog" ]]; then return; fi
   fi
  done
 }
