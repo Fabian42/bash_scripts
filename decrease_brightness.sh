@@ -7,22 +7,22 @@ current=$(cat $setting)
 if((current>104)); then
  # if gamma active, disable, but keep brightness at maximum
  if(($(cat $file)>416)); then
-  xcalib -c
   echo -n 416 > $file
+  xcalib -c
  # otherwise, reduce brightness to 25% (and keep gamma inactive)
  else
-  sudo su -c "echo -n 104 > $setting"
   echo -n 104 > $file
+  sudo su -c "echo -n 104 > $setting"
  fi
 # brightness probably =25%, definitely above minimum
 elif((current>1)); then
  # set brightness to minimum
- sudo su -c "echo -n 1 > $setting"
  echo -n 1 > $file
+ sudo su -c "echo -n 1 > $setting"
 # brightness probably =minimum, definitely screen on
 elif((current>0)); then
  # turn screen off
- sudo su -c "echo -n 0 > $setting"
  echo -n 0 > $file
+ sudo su -c "echo -n 0 > $setting"
 # if screen already off, do nothing
 fi

@@ -6,21 +6,21 @@ current=$(cat $setting)
 # screen is off
 if((current==0)); then
  # turn screen on, set brightness to minimum
- sudo su -c "echo -n 1 > $setting"
  echo -n 1 > $file
+ sudo su -c "echo -n 1 > $setting"
 # brightness probably =minimum, definitely <25%
 elif((current<104)); then
  # set brightness to 25%
- sudo su -c "echo -n 104 > $setting"
  echo -n 104 > $file
+ sudo su -c "echo -n 104 > $setting"
 # brightness probably =25%, definitely <100%
 elif((current<416)); then
  # set brightness to 100%
- sudo su -c "echo -n 416 > $setting"
  echo -n 416 > $file
+ sudo su -c "echo -n 416 > $setting"
 # brightness =100%, if gamma inactive, enable
 elif(($(cat $file)<999)); then
- xcalib -gc .5 -a
  echo -n 999 > $file
+ xcalib -gc .5 -a
 # if gamma already active, do nothing
 fi
