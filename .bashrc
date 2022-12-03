@@ -339,7 +339,7 @@ subs(){
  stream=0
  for lang in $(ffprobe "$1" 2>&1 | grep "Subtitle" | grep -Eo "  Stream \\#0\\:[0-9]+(\\[[0-9]x[0-9]\\])?\\([a-z]+" | sed "s/  Stream \\#0\\:[0-9]+\\(//"); do
   echo "\nSubtitles #"$stream", language: "$lang
-  ffmpeg -i "$1" -map 0:s:$stream -f srt - -v 16 | grep -v -E -e "^[0-9\:\,]{12} \-\-> [0-9\:\,]{12}$" -e "^[0-9]+$" -e "^$" | sed "s/\\\h//g"
+  ffmpeg -i "$1" -map 0:s:$stream -f srt - -v 16 | grep -v -E -e "^[0-9\:\,]{12} \-\-> [0-9\:\,]{12}$" -e "^[0-9]+$" -e "^$" | sed "s/\\\\h//g"
   ((stream++))
  done
 }
