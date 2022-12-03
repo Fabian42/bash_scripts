@@ -38,7 +38,7 @@ while true; do
     ((net_down++))
     if ((net_down%6==1)); then
      # repair internet by re-establishing connection, then don't do anything anymore for at least one minute
-     notify-send -t 1000 "$(myip 2>/dev/null)"
+     notify-send -t 2000 "IP: $(myip 2>/dev/null)"
      nmcli dev wifi connect Weelaan
     fi
    else

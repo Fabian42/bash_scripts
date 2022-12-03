@@ -337,9 +337,9 @@ alias commit="git diff; git add .; git status; read -p \"Press Enter to continue
 # print subtitles from video
 subs(){
  stream=0
- for lang in $(ffprobe "$1" 2>&1 | grep "Subtitle" | grep -Eo "  Stream \\#0\\:[0-9]+\\([a-z]+" | sed "s/  Stream \\#0\\:[0-9]+\\(//"); do
+ for lang in $(ffprobe "$1" 2>&1 | grep "Subtitle" | grep -Eo "  Stream \\#0\\:[0-9]+(\\[[0-9]x[0-9]\\])?\\([a-z]+" | sed "s/  Stream \\#0\\:[0-9]+\\(//"); do
   echo "\nSubtitles #"$stream", language: "$lang
-  ffmpeg -i "$1" -map 0:s:$stream -f srt - -v 16 | grep -v -E -e "^[0-9\:\,]{12} \-\-> [0-9\:\,]{12}$" -e "^[0-9]+$" -e "^$"
+  ffmpeg -i "$1" -map 0:s:$stream -f srt - -v 16 | grep -v -E -e "^[0-9\:\,]{12} \-\-> [0-9\:\,]{12}$" -e "^[0-9]+$" -e "^$" | sed "s/\\\h//g"
   ((stream++))
  done
 }
@@ -354,6 +354,9 @@ subs(){
 #  fi
 # done
 #}
+
+# exit VLC after playing media
+alias vlc="vlc --play-and-exit"
 
 ## searches
 # search console history
@@ -396,21 +399,35 @@ alias gravel="xdotool getactivewindow windowminimize; sleep 1; for slot in {1..9
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # get a window ID for a multiplayer Minecraft window
 mc(){
- for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)"); do
+ for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)")$(xdotool search --name "FaRo[13] on SL"); do
   if [[ ! "$(xdotool getwindowname "$id")" =~ .*CopyQ.* ]]; then
    echo "$id"
    break
   fi
  done
 }
-# launch Minecraft with minimum settings and CPU limit to keep video chats working
-mn(){ c c; rm options.txt; cp options_min.txt options.txt; cpulimit -l 600 -i prime-run /usr/bin/minecraft-launcher & xdotool key q key return; }
+# launch Minecraft with minimum settings
+mn(){ (
+--  rm /home/fabian/.minecraft/launcher_profiles.json
+--  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
+  rm /home/fabian/hdd/d/minecraft/options.txt
+  cp /home/fabian/hdd/d/minecraft/options_min.txt /home/fabian/hdd/d/minecraft/options.txt
+  prime-run /usr/bin/minecraft-launcher
+ ) & xdotool key q sleep 0.1 key return
+}
 # launch Minecraft with maximum settings
-mx(){ c c; rm options.txt; cp options_max.txt options.txt; prime-run /usr/bin/minecraft-launcher & xdotool key q key return;}
+mx(){ (
+--  rm /home/fabian/.minecraft/launcher_profiles.json
+--  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
+  rm /home/fabian/hdd/d/minecraft/options.txt
+  cp /home/fabian/hdd/d/minecraft/options_max.txt /home/fabian/hdd/d/minecraft/options.txt
+  prime-run /usr/bin/minecraft-launcher
+ ) & xdotool key q sleep 0.1 key return
+}
 
 ## miscellaneous
 # print public IP addresses
-alias myip="wget -T3 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
+alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
 # quit
 alias q="exit"
 # forget commands starting with a space
@@ -545,8 +562,8 @@ tagesschau(){
  url=$(curl -s "https://www.tagesschau.de/thema/ukraine/" | grep -e "https://www.tagesschau.de/newsticker/liveblog-ukraine-" -e "https://www.tagesschau.de/ausland/europa/liveblog-ukraine-" | head -n 1 | grep -Eo "https\\:\\/\\/www\\.tagesschau\\.de\\/[a-z0-9\\/\\-]+")
  curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
  old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
- whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
- blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " soll .* haben" " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" "plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droh" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote " "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher.* zu" "pocht auf" "pochen auf" "prognos" "frag")
+ whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk" "polen" "polnisch")
+ blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote " "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff")
  while sleep 60; do
   page="$(curl -s "$url""~rss2feed.xml")"
   if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
