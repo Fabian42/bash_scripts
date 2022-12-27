@@ -394,7 +394,7 @@ alias bones="xdotool getactivewindow windowminimize; xdotool keydown Shift keydo
 # craft 9×3 mineral items into blocks
 alias coal="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # break stacks of flint in slots, 1, 3-9 and offhand with a shovel in slot 2
-alias gravel="xdotool getactivewindow windowminimize; sleep 1; for slot in {1..9}; do for i in {1..70}; do xdotool key $slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
+alias gravel="xdotool getactivewindow windowminimize; sleep 1; for slot in {1..9}; do for i in {1..70}; do xdotool key \$slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
 # play Slicedlime stream in VLC
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # get a window ID for a multiplayer Minecraft window
@@ -439,7 +439,7 @@ shopt -s cdspell
 # switching to directories without "cd"
 shopt -s autocd
 # ignore consecutive duplicate commands, anything that starts with a space and some specific commands in history and up-arrow list
-HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu"
+HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu:shutdown"
 # Only split on newlines for "for" loops, not on spaces from now on.
 alias nl="IFS=$'\n'"
 # Uninstallation by package or command name, also deletes files
@@ -563,7 +563,7 @@ tagesschau(){
  curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
  old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
  whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk" "polen" "polnisch")
- blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote " "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff")
+ blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn")
  while sleep 60; do
   page="$(curl -s "$url""~rss2feed.xml")"
   if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
