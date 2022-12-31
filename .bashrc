@@ -559,10 +559,10 @@ alias net="nmcli dev wifi connect Weelaan; q"
 # output live Ukraine newsticker and notify for filtered entries
 tagesschau(){
  clear
- url=$(curl -s "https://www.tagesschau.de/thema/ukraine/" | grep -e "https://www.tagesschau.de/newsticker/liveblog-ukraine-" -e "https://www.tagesschau.de/ausland/europa/liveblog-ukraine-" | head -n 1 | grep -Eo "https\\:\\/\\/www\\.tagesschau\\.de\\/[a-z0-9\\/\\-]+")
+ url=$(curl -s "https://www.tagesschau.de/thema/ukraine/" | grep -e "https://www.tagesschau.de/newsticker/liveblog-" -e "https://www.tagesschau.de/ausland/europa/liveblog-ukraine-" | head -n 1 | grep -Eo "https\\:\\/\\/www\\.tagesschau\\.de\\/[a-z0-9\\/\\-]+")
  curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
  old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
- whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk" "polen" "polnisch")
+ whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
  blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn")
  while sleep 60; do
   page="$(curl -s "$url""~rss2feed.xml")"

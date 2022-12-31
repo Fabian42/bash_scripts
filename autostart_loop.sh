@@ -3,11 +3,10 @@ source /home/fabian/hdd/d/programs/bash_scripts/.bashrc
 brightness_file="/home/fabian/hdd/d/programs/bash_scripts/brightness.txt"
 brightness_setting="/sys/class/backlight/intel_backlight/brightness"
 
-# maybe disable screen off after 10 minutes
+# disable screen off after 10 minutes
 xset -dpms
 xset s off
-
-#copyq &
+caffeine &
 
 while true; do
  for i in {1..60}; do

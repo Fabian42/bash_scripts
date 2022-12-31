@@ -14,6 +14,7 @@ worldometers(){
 z(){
  read a;
  if [[ "$a" == "q" ]]; then
+  xdotool key q sleep 0.1 key return &
   exit 1
  fi
 }
