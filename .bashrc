@@ -139,7 +139,18 @@ alias bandwhich="sudo bandwhich"
 # sudo make me a downgrade sandwhich
 alias downgrade="sudo downgrade"
 # fix broken updates
-alias magic="sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable && sudo pacman-key --refresh-keys; yay -Scc && yay -Syyu; search pacnew"
+magic(){
+ sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable
+ sudo pacman-key --refresh-keys
+ echo "y\nn\ny\n" | yay -Scc
+ yay -Syyu
+ to_rebuild=$(sed "s/[^\\t]+\\t//")
+ echo "REBUILDING: $to_rebuild"
+ yay -S $to_rebuild
+ echo "FILE CONFLICTS:"
+ search pacnew
+ search pacsave
+}
 # only the cleaning part of the above
 alias space="echo \"y\nn\ny\n\" | yay -Scc"
 # fix iMage "unable to write pixel cache" on large images
@@ -383,6 +394,15 @@ p(){
 delhere(){ del $(here "$1");}
 
 ## Minecraft
+# get a window ID for a multiplayer Minecraft window
+mc(){
+ for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)")$(xdotool search --name "FaRo[13] on SL"); do
+  if [[ ! "$(xdotool getwindowname "$id")" =~ .*CopyQ.* ]]; then
+   echo "$id"
+   break
+  fi
+ done
+}
 # filter latest Minecraft log
 log2(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
@@ -395,21 +415,14 @@ alias bones="xdotool getactivewindow windowminimize; xdotool keydown Shift keydo
 alias coal="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # break stacks of flint in slots, 1, 3-9 and offhand with a shovel in slot 2
 alias gravel="xdotool getactivewindow windowminimize; sleep 1; for slot in {1..9}; do for i in {1..70}; do xdotool key \$slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
+# use stacks 2..9 of bonemeal on cocoa beans
+alias cocoa="xdotool getactivewindow windowminimize; sleep 1; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 1 click 1 click 1 click 1 sleep 0.1 key 1 mousedown 3 sleep 0.3 mouseup 3; done; done"
 # play Slicedlime stream in VLC
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
-# get a window ID for a multiplayer Minecraft window
-mc(){
- for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)")$(xdotool search --name "FaRo[13] on SL"); do
-  if [[ ! "$(xdotool getwindowname "$id")" =~ .*CopyQ.* ]]; then
-   echo "$id"
-   break
-  fi
- done
-}
 # launch Minecraft with minimum settings
 mn(){ (
---  rm /home/fabian/.minecraft/launcher_profiles.json
---  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
+#  rm /home/fabian/.minecraft/launcher_profiles.json
+#  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
   rm /home/fabian/hdd/d/minecraft/options.txt
   cp /home/fabian/hdd/d/minecraft/options_min.txt /home/fabian/hdd/d/minecraft/options.txt
   prime-run /usr/bin/minecraft-launcher
@@ -417,8 +430,8 @@ mn(){ (
 }
 # launch Minecraft with maximum settings
 mx(){ (
---  rm /home/fabian/.minecraft/launcher_profiles.json
---  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
+#  rm /home/fabian/.minecraft/launcher_profiles.json
+#  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
   rm /home/fabian/hdd/d/minecraft/options.txt
   cp /home/fabian/hdd/d/minecraft/options_max.txt /home/fabian/hdd/d/minecraft/options.txt
   prime-run /usr/bin/minecraft-launcher
@@ -452,7 +465,7 @@ alias now="date \"+%H:%M:%S\""
 alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
 # package history
 pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
-pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\[ALPM\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
+pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
 # maximum temperature of any component
 alias sen="sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+ C\" | grep -oE \"[0-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
 # watch maximum temperature
@@ -550,7 +563,7 @@ alias ji="jisho -n999"
 # }
 
 # temporary download commands
-alias dlp="yt-dlp -f \"bv*[height<=?1080]+ba/b[height<=?1080]/22/18\" --check-formats --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja\" --embed-subs"
+alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --check-formats --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja\" --embed-subs"
 dlm(){ youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
 
 # fix internet
@@ -563,7 +576,7 @@ tagesschau(){
  curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
  old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
  whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
- blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn")
+ blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn" "so lange wie nötig" "empör" "unbefristet" "entsetz")
  while sleep 60; do
   page="$(curl -s "$url""~rss2feed.xml")"
   if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
@@ -592,14 +605,17 @@ tagesschau(){
    fi
    echo "$new_content\n"
    notify-send -u critical "$title"
-   if [[ "$title" = "Ende des Liveblogs" || "$title" = "Ende des heutigen Liveblogs" || "$title" = "Ende des Liveblog" ]]; then return; fi
+   if [[ "$title" = "Ende des Liveblogs" || "$title" = "Ende des heutigen Liveblogs" || "$title" = "Ende des Liveblog" || "$title" = "Liveblog endet" ]]; then return; fi
   fi
  done
 }
 
 # output help for formatting codes
 formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done; }
-
+# lowercase a string
+alias lower="tr '[:upper:]' '[:lower:]'"
+# wait for a process to finish (e.g. VLC)
+waitfor(){ while top -bn1 | grep -q "$1"; do sleep 1; done; }
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
 if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s)", time: $(date "+%H:%M:%S"); fi

@@ -33,11 +33,12 @@ while true; do
   fi
   if((i%10==0)); then
    #notify-send -t 10000 "$(myip 2>/dev/null)"
-   if [[ "" == "$(myip 2>/dev/null)" ]]; then
+   net="$(myip 2>/dev/null)"
+   if [[ "" == "$net" ]]; then
     ((net_down++))
     if ((net_down%6==1)); then
      # repair internet by re-establishing connection, then don't do anything anymore for at least one minute
-     notify-send -t 2000 "IP: $(myip 2>/dev/null)"
+     notify-send -t 2000 "IP: $net"
      nmcli dev wifi connect Weelaan
     fi
    else
