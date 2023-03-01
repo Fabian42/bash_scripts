@@ -20,11 +20,12 @@ while true; do
    sudo su -c "cat $brightness_file > $brightness_setting"
   fi
   if((i==60)); then
-   # notify if KDE connect can't reach phone
-   #if ! kdeconnect-cli -l | grep -q "paired and reachable"; then
+   # retry KDE Connect notification (and notify if it connect can't reach phone?)
+   if ! kdeconnect-cli -l | grep -q "paired and reachable"; then
+    kdeconnect-cli --refresh
     #notify-send -t 59000 "KDE connect died"
     #killall kdeconnectd; /usr/lib/kdeconnectd &> /dev/null & disown
-   #fi
+   fi
    # replace muted volume with volume 0 so that volume up keys work again
    if pulseaudio-ctl full-status | grep -qE "[0-9]+ yes"; then
     pactl set-sink-volume @DEFAULT_SINK@ 0

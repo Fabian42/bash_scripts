@@ -403,33 +403,57 @@ mc(){
   fi
  done
 }
+# minimize the console window before doing anything else
+alias mn="xdotool getactivewindow windowminimize; sleep 1"
 # filter latest Minecraft log
 log2(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
 log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
-# use all items on a full hotbar
-alias hotbar="xdotool getactivewindow windowminimize; for slot in {1..9}; do for i in {1..70}; do xdotool click --delay 0.1 1; done; xdotool click 5; done"
+# use all items on a full hotbar, optional argument of clicks per slot
+hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}; do i=0; while ((i++<max)); do xdotool click --delay 50 1; done; xdotool click 5; done; }
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
-alias bones="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 1081 586 click 1 mousemove 1325 446 click 1 mousemove 1086 642 click 1 mousemove 1325 446 click 1 mousemove 1082 695 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1145 594 click 1 mousemove 1325 446 click 1 mousemove 1140 641 click 1 mousemove 1325 446 click 1 mousemove 1133 708 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1196 585 click 1 mousemove 1325 446 click 1 mousemove 1196 648 click 1 mousemove 1325 446 click 1 mousemove 1195 711 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1243 591 click 1 mousemove 1325 446 click 1 mousemove 1250 644 click 1 mousemove 1325 446 click 1 mousemove 1247 701 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1301 600 click 1 mousemove 1325 446 click 1 mousemove 1301 663 click 1 mousemove 1325 446 click 1 mousemove 1313 707 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1366 591 click 1 mousemove 1325 446 click 1 mousemove 1358 645 click 1 mousemove 1325 446 click 1 mousemove 1354 687 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1399 600 click 1 mousemove 1325 446 click 1 mousemove 1410 637 click 1 mousemove 1325 446 click 1 mousemove 1410 710 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
+alias bones="mn; xdotool keydown Shift keydown y mousemove 1081 586 click 1 mousemove 1325 446 click 1 mousemove 1086 642 click 1 mousemove 1325 446 click 1 mousemove 1082 695 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1145 594 click 1 mousemove 1325 446 click 1 mousemove 1140 641 click 1 mousemove 1325 446 click 1 mousemove 1133 708 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1196 585 click 1 mousemove 1325 446 click 1 mousemove 1196 648 click 1 mousemove 1325 446 click 1 mousemove 1195 711 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1243 591 click 1 mousemove 1325 446 click 1 mousemove 1250 644 click 1 mousemove 1325 446 click 1 mousemove 1247 701 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1301 600 click 1 mousemove 1325 446 click 1 mousemove 1301 663 click 1 mousemove 1325 446 click 1 mousemove 1313 707 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1366 591 click 1 mousemove 1325 446 click 1 mousemove 1358 645 click 1 mousemove 1325 446 click 1 mousemove 1354 687 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1399 600 click 1 mousemove 1325 446 click 1 mousemove 1410 637 click 1 mousemove 1325 446 click 1 mousemove 1410 710 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # craft 9×3 mineral items into blocks
-alias coal="xdotool getactivewindow windowminimize; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
+alias coal="mn; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # break stacks of flint in slots, 1, 3-9 and offhand with a shovel in slot 2
-alias gravel="xdotool getactivewindow windowminimize; sleep 1; for slot in {1..9}; do for i in {1..70}; do xdotool key \$slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
+alias gravel="for slot in {1..9}; do for i in {1..70}; do xdotool key \$slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
+# move all inventory slot 1 up (wrapping), args: x list (string with space-separated numbers or similar), y list
+invmove(){ xdotool key r sleep 0.1; for x in $1; do for y in $2; do xdotool mousemove $x $y click 1; done; done; xdotool key r sleep 0.1; }
+# same as above, but the offhand replaces one given slot, args: x list, y list, x to skip, y to skip, x of offhand, y of offhand
+invmove_skip(){ xdotool key r sleep 0.1; for x in $1; do for y in $2; do if (( x==$3 && y==$4 )); then xdotool mousemove $5 $6 click 1; else xdotool mousemove $x $y click 1; fi; done; done; xdotool key r sleep 0.1; }
+# move inventory on the left of my two screens
+alias invmove_left="invmove \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"1193 1104 1037 964 1193\""
+# …on the right
+alias invmove_right="invmove \"3221 3292 3365 3436 3509 3580 3653 3725 3797\" \"1011 924 850 780 1011\""
+# …on the only one when no second screen is connected
+alias invmove_single="invmove \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"830 747 671 598 830\""
+# move inventory, replace offhand instead of second hotbar slot (for gravel)
+alias invmove_2_left="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"1193 1104 1037 964 1193\" 1057 1193 1255 871"
+alias invmove_2_right="invmove_skip \"2913 2985 3057 3128 3200 3273 3344 3416 3487\" \"1011 924 850 780 1011\" 2985 924 3496 692"
+alias invmove_2_single="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"830 747 671 598 830\" 1057 830 1260 516"
+# break an entire inventory of gravel into flint
+alias gravel_left="mn; gravel; invmove_2_left; gravel; invmove_2_left; gravel; invmove_2_left; gravel"
+alias gravel_right="mn; gravel; invmove_2_right; gravel; invmove_2_right; gravel; invmove_2_right; gravel"
+alias gravel_single="mn; gravel; invmove_2_single; gravel; invmove_2_single; gravel; invmove_2_single; gravel"
+# farm kelp with an entire inventory of bonemeal
+alias kelp_left="mn; hotbar 102; invmove_left; hotbar 102; invmove_left; hotbar 102; invmove_left; hotbar 102"
+alias kelp_right="mn; hotbar 102; invmove_right; hotbar 102; invmove_right; hotbar 102; invmove_right; hotbar 102"
+alias kelp_single="mn; hotbar 102; invmove_single; hotbar 102; invmove_single; hotbar 102; invmove_single; hotbar 102"
 # use stacks 2..9 of bonemeal on cocoa beans
-alias cocoa="xdotool getactivewindow windowminimize; sleep 1; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 1 click 1 click 1 click 1 sleep 0.1 key 1 mousedown 3 sleep 0.3 mouseup 3; done; done"
+alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 1 click 1 click 1 click 1 sleep 0.1 key 1 mousedown 3 sleep 0.3 mouseup 3; done; done"
 # play Slicedlime stream in VLC
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
-# launch Minecraft with minimum settings
-mn(){ (
+# launch Minecraft with minimum settings (commented out, because "Dynamic FPS" makes lowering settings for AFK obsolete)
+#mn(){ (
 #  rm /home/fabian/.minecraft/launcher_profiles.json
 #  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
-  rm /home/fabian/hdd/d/minecraft/options.txt
-  cp /home/fabian/hdd/d/minecraft/options_min.txt /home/fabian/hdd/d/minecraft/options.txt
-  prime-run /usr/bin/minecraft-launcher
- ) & xdotool key q sleep 0.1 key return
-}
+#  rm /home/fabian/hdd/d/minecraft/options.txt
+#  cp /home/fabian/hdd/d/minecraft/options_min.txt /home/fabian/hdd/d/minecraft/options.txt
+#  prime-run /usr/bin/minecraft-launcher
+# ) & xdotool key q sleep 0.1 key return
+#}
 # launch Minecraft with maximum settings
-mx(){ (
+m(){ (
 #  rm /home/fabian/.minecraft/launcher_profiles.json
 #  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
   rm /home/fabian/hdd/d/minecraft/options.txt
@@ -576,7 +600,7 @@ tagesschau(){
  curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
  old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
  whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
- blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn" "so lange wie nötig" "empör" "unbefristet" "entsetz")
+ blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn" "so lange wie nötig" "empör" "unbefristet" "entsetz" "rufe" "ehr")
  while sleep 60; do
   page="$(curl -s "$url""~rss2feed.xml")"
   if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
@@ -616,6 +640,7 @@ formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done; }
 alias lower="tr '[:upper:]' '[:lower:]'"
 # wait for a process to finish (e.g. VLC)
 waitfor(){ while top -bn1 | grep -q "$1"; do sleep 1; done; }
+alias no="yes 'n' #t"
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
 if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s)", time: $(date "+%H:%M:%S"); fi
