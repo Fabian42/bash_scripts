@@ -1,14 +1,11 @@
-source /home/fabian/hdd/d/programs/bash_scripts/sane
 # This file gets sourced by my actual .bashrc file that exists in both /home/fabian and /root and has the following content:
-# # increase console history size from 500 to unlimited
 # HISTSIZE=
 # HISTFILESIZE=
-# # visudo etc. with nano
 # export EDITOR="/usr/bin/nano"
 # export VISUAL="/usr/bin/nano"
-# # everything else
-# source /home/fabian/hdd/d/programs/bash_scripts/.bashrc
 # The purpose of that is to always have these applied, even if I horribly mess up this file.
+
+source /home/fabian/hdd/d/programs/bash_scripts/sane
 
 ## variables
 export drive="/home/fabian/hdd/d"
@@ -121,7 +118,7 @@ alias ech="echo -n"
 # don't append useless newline, show line numbers
 alias nano="nano -Ll"
 # change shutdown default duration to 0 instead of 1 minute
-shutdown(){ if [ "$1" == "" ]; then /usr/bin/shutdown --no-wall 0; else /usr/bin/shutdown --no-wall "$@"; fi;}
+shutdown(){ if [[ "$1" == "" ]]; then /usr/bin/shutdown --no-wall 0; else /usr/bin/shutdown --no-wall "$@"; fi;}
 # properly sync history between consoles (still requires pressing Enter to retrieve)
 PROMPT_COMMAND="history -a; history -n"
 # "pwd" is a stupid name for "show current path" (also expand links to full path from now on)
@@ -159,8 +156,8 @@ export TMPDIR="/var/tmp"
 alias kde="killall plasmashell; killall kdeconnectd; kstart5 plasmashell &> /dev/null & disown; /usr/lib/kdeconnectd &> /dev/null & disown; exit"
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
-# grep ignores case, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
-grep(){ /usr/bin/grep -i --colour=auto "$@" 2>/dev/null;}
+# grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
+grep(){ /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null;}
 # repairs secondary Bluetooth tray icon and restarts Bluetooth
 alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
 # restart PulseAudio
@@ -186,7 +183,8 @@ scr(){
 # execute scripts with aliases and functions in .bashrc
 alias e="source"
 # visudo with nano
-export EDITOR="nano"
+export EDITOR="/usr/bin/nano"
+export VISUAL="/usr/bin/nano"
 # diff including subfolders
 alias diff="diff -r"
 # allow downgrades
@@ -202,7 +200,7 @@ alias journalctl="journalctl --no-pager"
 # normal output of systemctl
 alias systemctl="systemctl --no-pager"
 # make help pages actually print to STDOUT properly
-alias man="echo "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" | man -a -P cat"
+alias man="echo \"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\" | man -a -P cat"
 # original quality and correct colours for PNGs
 alias convert="convert -quality 100 -strip -auto-orient"
 # don't interrupt tasks with Ctrl+C
@@ -211,6 +209,44 @@ stty intr ^- 2>/dev/null
 stty -ixon 2>/dev/null
 # skip non-issues in shellcheck, list all links at bottom
 alias shellcheck="shellcheck --exclude=SC2164,SC2181,SC2028,SC2010,2002,SC2162 -W 9999"
+
+## console
+# forget commands starting with a space
+HISTCONTROL=ignorespace
+# show time in history
+HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
+# directory name autocorrect
+shopt -s cdspell
+# switching to directories without "cd"
+shopt -s autocd
+# ignore consecutive duplicate commands, anything that starts with a space and some specific commands in history and up-arrow list
+HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu:shutdown"
+# quit
+alias q="exit"
+# search console history
+h(){ if [[ "$1" == "" ]]; then history | tail -n 100; else history | grep -i "$@" | tail -n 101 | head -n -1 | grep -i "$@"; fi;}
+# search console history, no 100 entries limit
+hi(){ if [[ "$1" == "" ]]; then history; else history | grep -i "$@" | grep -i "$@"; fi;}
+# Only split on newlines for "for" loops, not on spaces from now on.
+alias nl="IFS=$'\n'"
+# output matching lines from this file
+alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
+# highlight parts of an output
+hl(){
+ cmd="echo \"\$line\" | grep -e \"\""
+ for arg in $@; do
+  cmd="$cmd -e \"$arg\""
+ done
+ while read line; do
+  eval "$cmd"
+ done
+}
+# output help for formatting codes
+formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done; }
+# lowercase a string
+alias lower="tr '[:upper:]' '[:lower:]'"
+# yesn't
+alias no="yes 'n' #t"
 
 ## files
 # always list all files that actually exist, in better order
@@ -370,16 +406,14 @@ subs(){
 alias vlc="vlc --play-and-exit"
 
 ## searches
-# search console history
-h(){ if [[ "$1" == "" ]]; then history | tail -n 100; else history | grep -i "$@" | tail -n 101 | head -n -1 | grep -i "$@"; fi;}
-# search console history, no 100 entries limit
-hi(){ if [[ "$1" == "" ]]; then history; else history | grep -i "$@" | grep -i "$@"; fi;}
 # search files everywhere, ignoring case, partial file name, avoid most of the usual "permission denied" error messages and hide the rest
 search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i "$1";}
 # same as above, but only in the current folder and subfolders and not as root and not hiding errors
 here(){ find . -iwholename "*$1*" | sort | grep -i "$1";}
 # same as above, but as root
 shere(){ sudo find . -iwholename "*$1*" | grep -i "$1";}
+# trash all files for search term
+delhere(){ del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
  if [[ "$1" == "" ]]; then
@@ -390,8 +424,6 @@ p(){
  (prime-run vlc --play-and-exit -Z $files &> /dev/null & disown)
  exit
 }
-# trash all files for search term
-delhere(){ del $(here "$1");}
 
 ## Minecraft
 # get a window ID for a multiplayer Minecraft window
@@ -417,28 +449,91 @@ alias bones="mn; xdotool keydown Shift keydown y mousemove 1081 586 click 1 mous
 alias coal="mn; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # break stacks of flint in slots, 1, 3-9 and offhand with a shovel in slot 2
 alias gravel="for slot in {1..9}; do for i in {1..70}; do xdotool key \$slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
-# move all inventory slot 1 up (wrapping), args: x list (string with space-separated numbers or similar), y list
-invmove(){ xdotool key r sleep 0.1; for x in $1; do for y in $2; do xdotool mousemove $x $y click 1; done; done; xdotool key r sleep 0.1; }
+# farm crops
+alias crop="xdotool keydown Shift sleep 0.1; for slot in {1..9}; do for i in {1..50}; do xdotool click --delay 8 --repeat 5 1 click --delay 1 3; done; xdotool click --delay 1 5; done; xdotool sleep 0.1 click 3 sleep 0.1 keyup Shift"
+# figure out which screen Minecraft is on
+mcscreen(){
+ export screen="$1"
+ if [[ "$screen" == "" ]]; then
+  pos=$(xdotool getwindowgeometry $(mc) | grep Position | sed "s/  Position\\: //;s/ \\(screen\\: 0\\)//")
+  if [[ "$pos" == "0,413" ]]; then
+   export screen="left"
+  elif [[ "$pos" == "1920,53" ]]; then
+   export screen="right"
+  elif [[ "$pos" == "0,53" ]]; then
+   export screen="single"
+  else
+   echo "Screen not provided and couldn't be figured out! Whatever called this will probably mess up now."
+   return
+  fi
+ fi
+}
+# craft the first available recipe in a crafting table's recipe book
+firstcraft(){
+ mcscreen "$1"
+ if [[ "$screen" == "left" ]]; then
+  recipe="412 763"
+  output="1445 763"
+ elif [[ "$screen" == "right" ]]; then
+  recipe="2653 573"
+  output="3685 583"
+ elif [[ "$screen" == "single" ]]; then
+  recipe="413 404"
+  output="1445 402"
+ else
+  echo "Invalid screen argument! Whatever called this will probably mess up now."
+  return
+ fi
+ xdotool keydown Shift sleep 0.1 mousemove $recipe click 1 mousemove $output sleep 0.1 click 1 keyup Shift sleep 0.1
+}
+# move all inventory slot 1 up (wrapping), args: "left"|"right"|"single" (screen), slot number to skip (switch with offhand instead)
+invmove(){
+ mcscreen "$1"
+ if [[ "$screen" == "left" ]]; then
+  x_list="980 1057 1123 1198 1267 1340 1411 1484 1554"
+  y_list="1193 1104 1037 964 1193"
+  offhand="1255 871"
+ elif [[ "$screen" == "right" ]]; then
+  x_list="3221 3292 3365 3436 3509 3580 3653 3725 3797"
+  y_list="1011 924 850 780 1011"
+  offhand="3496 692"
+ elif [[ "$screen" == "single" ]]; then
+  x_list="980 1057 1123 1198 1267 1340 1411 1484 1554"
+  y_list="830 747 671 598 830"
+  offhand="1260 516"
+ else
+  echo "Invalid screen argument! Whatever called this will probably mess up now."
+  return
+ fi
+ if ! [[ "$2" == "" || "$2" =~ ^[1-9]$ ]]; then
+  echo "Invalid slot number! Nothing will be skipped."
+ fi
+ xdotool key r sleep 0.1
+ i=0
+ for x in $x_list; do
+  ((i++))
+  for y in $y_list; do
+   if ((i==0$2&&(y==1193||y==1011||y==830))); then # leading 0 against syntax error when there is no skipped slot
+    xdotool mousemove $offhand click --delay 5 1
+   else
+    xdotool mousemove $x $y click --delay 5 1
+   fi
+  done
+ done
+ xdotool key r sleep 0.1
+}
 # same as above, but the offhand replaces one given slot, args: x list, y list, x to skip, y to skip, x of offhand, y of offhand
 invmove_skip(){ xdotool key r sleep 0.1; for x in $1; do for y in $2; do if (( x==$3 && y==$4 )); then xdotool mousemove $5 $6 click 1; else xdotool mousemove $x $y click 1; fi; done; done; xdotool key r sleep 0.1; }
-# move inventory on the left of my two screens
-alias invmove_left="invmove \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"1193 1104 1037 964 1193\""
-# …on the right
-alias invmove_right="invmove \"3221 3292 3365 3436 3509 3580 3653 3725 3797\" \"1011 924 850 780 1011\""
-# …on the only one when no second screen is connected
-alias invmove_single="invmove \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"830 747 671 598 830\""
 # move inventory, replace offhand instead of second hotbar slot (for gravel)
 alias invmove_2_left="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"1193 1104 1037 964 1193\" 1057 1193 1255 871"
 alias invmove_2_right="invmove_skip \"2913 2985 3057 3128 3200 3273 3344 3416 3487\" \"1011 924 850 780 1011\" 2985 924 3496 692"
 alias invmove_2_single="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"830 747 671 598 830\" 1057 830 1260 516"
 # break an entire inventory of gravel into flint
-alias gravel_left="mn; gravel; invmove_2_left; gravel; invmove_2_left; gravel; invmove_2_left; gravel"
-alias gravel_right="mn; gravel; invmove_2_right; gravel; invmove_2_right; gravel; invmove_2_right; gravel"
-alias gravel_single="mn; gravel; invmove_2_single; gravel; invmove_2_single; gravel; invmove_2_single; gravel"
+allgravel(){ mn; gravel; invmove "$1" 2; gravel; invmove "$1" 2; gravel; invmove "$1" 2; gravel; }
 # farm kelp with an entire inventory of bonemeal
-alias kelp_left="mn; hotbar 102; invmove_left; hotbar 102; invmove_left; hotbar 102; invmove_left; hotbar 102"
-alias kelp_right="mn; hotbar 102; invmove_right; hotbar 102; invmove_right; hotbar 102; invmove_right; hotbar 102"
-alias kelp_single="mn; hotbar 102; invmove_single; hotbar 102; invmove_single; hotbar 102; invmove_single; hotbar 102"
+allkelp(){ mn; hotbar 102; invmove "$1"; hotbar 102; invmove "$1"; hotbar 102; invmove "$1"; hotbar 102; }
+# farm crops with an entire inventory of bonemeal
+allcrop(){ mn; crop; invmove "$1"; crop; invmove "$1"; crop; invmove "$1"; crop; xdotool sleep 0.1 click 3 sleep 1 click 1; firstcraft; }
 # use stacks 2..9 of bonemeal on cocoa beans
 alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 1 click 1 click 1 click 1 sleep 0.1 key 1 mousedown 3 sleep 0.3 mouseup 3; done; done"
 # play Slicedlime stream in VLC
@@ -462,69 +557,35 @@ m(){ (
  ) & xdotool key q sleep 0.1 key return
 }
 
-## miscellaneous
+## internet
 # print public IP addresses
 alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
-# quit
-alias q="exit"
-# forget commands starting with a space
-HISTCONTROL=ignorespace
-# show time in history
-HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
-# directory name autocorrect
-shopt -s cdspell
-# switching to directories without "cd"
-shopt -s autocd
-# ignore consecutive duplicate commands, anything that starts with a space and some specific commands in history and up-arrow list
-HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu:shutdown"
-# Only split on newlines for "for" loops, not on spaces from now on.
-alias nl="IFS=$'\n'"
-# Uninstallation by package or command name, also deletes files
-un(){ sudo pacman -Rn $(for pack in $(ech "$* $(pacman -Qoq $@ &> /dev/null)" | tr " " "\n" | sort -u); do if pacman -Qi "$pack" &> /dev/null; then echo $pack; fi; done);}
-# Prints the current time. Useful for scripts.
-alias now="date \"+%H:%M:%S\""
 # test downloaded DVD archive
 7t(){ IFS=$'\n'; c "Downloads/Telegram Desktop"; for file in $(ls -1 | grep -e "\.zip$" -e "\.zip\.001$"); do 7z t "$file"; done;}
-# output matching lines from this file
-alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
-# package history
-pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
-pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
-# maximum temperature of any component
-alias sen="sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+ C\" | grep -oE \"[0-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
-# watch maximum temperature
-sens(){
-  for i in {1..23}; do
-  xdotool key Ctrl+plus
+# Jisho search with (almost) no limit
+alias ji="jisho -n999"
+# temporary download commands until dl is done
+alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --check-formats --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja\" --embed-subs"
+dlm(){ yt-dlp -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
+# fix internet
+alias net="nmcli dev wifi connect Weelaan; q"
+
+## packages
+# get packages by command name, also include the entered term, remove duplicates
+pack_by_command(){
+ for pack in $(ech "$* $(pacman -Qoq $@ 2>/dev/null)" | tr " " "\n" | sort -u); do
+  if [[ "$(pacman -Qi "$pack" 2>/dev/null | grep "Name            \\: " | sed "s/Name            \\: //")" == "$pack" ]]; then
+   echo $pack
+  fi
  done
- watch -tn1 "sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\+[0-9\.]+ C\" | grep -oE \"[0-9\\.]+\" | sed \"s/\\.[0-9]//\" | sort -n | tail -1"
 }
-
-# highlight parts of an output
-hl(){ 
- if [ "$2" == "" ]; then
-  grep -e "" -e "$1";
- else
-  if [ "$3" == "" ]; then
-   grep -e "" -e "$1" -e "$2";
-  else
-   if [ "$4" == "" ]; then
-    grep -e "" -e "$1" -e "$2" -e "$3";
-   else
-    grep -e "" -e "$1" -e "$2" -e "$3" -e "$4";
-   fi;
-  fi;
- fi;
-}
-
-# Info about commands: Location, package+info, dependencies, (wait for enter,) owned files and all occurrences of search term
+# Info about packages and commands: location, package+info, dependencies, (wait for enter,) owned files and all occurrences of search term
 about(){
  # In the simplest case, this already shows the location.
  whereis "$@";
  # package that owns given command
  pacman -Qo "$@";
- # Make a list of given packages and the packages for all given commands, removing duplicates (like the package "bash" owning the command "bash").
- packs="$(ech "$* $(pacman -Qoq "$@")" | tr " " "\n" | sort -u)";
+ packs="$(pack_by_command $*)";
  for i in $packs; do echo $i; done
  # a big section of general package information
  pacman -Qii $packs | grep -E -e "" -e "Description     \\: .+" -e "Required By     \\: .+";
@@ -544,103 +605,26 @@ about(){
   search "$term";
  done;
 }
+# Uninstallation by package or command name, also deletes files
+un(){ sudo pacman -Rn $(pack_by_command $*); }
 
-# Jisho search with (almost) no limit
-alias ji="jisho -n999"
-
-# # Shortcut for youtube-dlp. For more info, run "dl --help".
-# dl(){
-#  if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ ]]; then
-#   /home/fabian/hdd/d/programs/bash_scripts/dl --help
-#  else
-#   date "+%H:%M:%S"
-#   if [ "$1" == "" ]; then
-#    youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -u "fabianroeling@googlemail.com" -p "$yt_pw" -o "/home/fabian/Downloads/%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --mark-watched --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" https://www.youtube.com/playlist?list=$wl_id
-#   else
-#    if [[ "$1" =~ ^[0-9]+$ ]]; then
-#     youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -u "fabianroeling@googlemail.com" -p "$yt_pw" -o "/home/fabian/Downloads/%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --mark-watched --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --playlist-start $1 --exec "echo \"\$(date "+%H:%M:%S") {}\"" https://www.youtube.com/playlist?list=$wl_id
-#    else
-#     if [ "$2" == "" ]; then
-#      youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" $1
-#     else
-#      if [[ "$2" =~ ^[0-9]+$ ]]; then
-#       youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "ja,ja-JP,de,de-DE,en-US,en,en-GB" --write-sub --embed-subs --playlist-start $2 --exec "echo \"\$(date "+%H:%M:%S") {}\"" $1
-#      else
-#       if [ "$1" == "m" ]; then
-#        if [[ "$3" =~ ^[0-9]+$ ]]; then
-#         youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames --playlist-start $3 -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" $2
-#        else
-#         shift
-#         youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"
-#        fi
-#       else
-#        youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s" --restrict-filenames --sub-lang "en-GB,en,en-US,de,de-DE,ja,ja-JP" --write-sub --embed-subs --exec "echo \"\$(date "+%H:%M:%S") {}\"" "$@"
-#       fi
-#      fi
-#     fi
-#    fi
-#   fi
-#   if (( "$?" != 0 )); then
-#    echo "There were errors while downloading!"
-#   fi
-#  fi
-# }
-
-# temporary download commands
-alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --check-formats --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja\" --embed-subs"
-dlm(){ youtube-dl --add-header 'Cookie:' -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
-
-# fix internet
-alias net="nmcli dev wifi connect Weelaan; q"
-
-# output live Ukraine newsticker and notify for filtered entries
-tagesschau(){
- clear
- url=$(curl -s "https://www.tagesschau.de/thema/ukraine/" | grep -e "https://www.tagesschau.de/newsticker/liveblog-" -e "https://www.tagesschau.de/ausland/europa/liveblog-ukraine-" | head -n 1 | grep -Eo "https\\:\\/\\/www\\.tagesschau\\.de\\/[a-z0-9\\/\\-]+")
- curl -s "$url""~rss2feed.xml" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" | tail -n +12 | sed "s/<\\/?[a-z]+>//g"
- old_time="$(curl -s "$url""~rss2feed.xml" | grep "<pubDate>" | head -n 1)"
- whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
- blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "sprech" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn" "so lange wie nötig" "empör" "unbefristet" "entsetz" "rufe" "ehr")
- while sleep 60; do
-  page="$(curl -s "$url""~rss2feed.xml")"
-  if [[ "$page" = "" ]]; then echo "Article not found!"; return; fi
-  new_time="$(echo "$page" | grep "<pubDate>" | head -n 1)"
-  if [[ "$new_time" != "$old_time" ]]; then
-   old_time="$new_time"
-   new_content="$(echo "$page" | head -n 16 | tail -n 4 | grep -v "pubDate" | sed "s/<\\/?[a-z]+>//g")"
-   title="$(echo "$new_content" | head -n 1)"
-   text="$(echo "$new_content" | tail -n 1)"
-   found_whitelist="false"
-   for regex in "${whitelist[@]}"; do
-    if echo "$title\n$text" | tr '[:upper:]' '[:lower:]' | grep -qE ".*$regex.*"; then
-     found_whitelist="true"
-     echo "Whitelist: $regex"
-     break
-    fi
-   done
-   if [[ "$found_whitelist" = "false" ]]; then
-    for regex in "${blacklist[@]}"; do
-     if echo "$title" | tr '[:upper:]' '[:lower:]' | grep -qE ".*$regex.*"; then
-      echo "\e[90m$new_content"
-      echo "Blacklist: $regex\e[0m\n"
-      continue 2 # don't notify, repeat main loop
-     fi
-    done
-   fi
-   echo "$new_content\n"
-   notify-send -u critical "$title"
-   if [[ "$title" = "Ende des Liveblogs" || "$title" = "Ende des heutigen Liveblogs" || "$title" = "Ende des Liveblog" || "$title" = "Liveblog endet" ]]; then return; fi
-  fi
+## misc
+# Prints the current time. Useful for scripts.
+alias now="date \"+%H:%M:%S\""
+# package history
+pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
+pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
+# maximum temperature of any component
+alias sen="sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+ C\" | grep -oE \"[0-90-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
+# watch maximum temperature
+sens(){
+  for i in {1..23}; do
+  xdotool key Ctrl+plus
  done
+ watch -tn1 "sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\+[0-9\.]+ C\" | grep -oE \"[0-9\\.]+\" | sed \"s/\\.[0-9]//\" | sort -n | tail -1"
 }
-
-# output help for formatting codes
-formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done; }
-# lowercase a string
-alias lower="tr '[:upper:]' '[:lower:]'"
 # wait for a process to finish (e.g. VLC)
 waitfor(){ while top -bn1 | grep -q "$1"; do sleep 1; done; }
-alias no="yes 'n' #t"
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
 if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s)", time: $(date "+%H:%M:%S"); fi

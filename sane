@@ -11,3 +11,6 @@ cat(){ echo "$(/usr/bin/cat "$@")";}
 alias echo="echo -e"
 # don't warn for technically not necessary backslashes
 grep(){ /usr/bin/grep "$@" 2>/dev/null;}
+# increase console history size from 500 to unlimited
+HISTSIZE=
+HISTFILESIZE=
