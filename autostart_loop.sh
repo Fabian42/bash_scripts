@@ -15,13 +15,14 @@ while true; do
   if xset q | grep -q "Caps Lock:   on"; then
    xdotool key Caps_Lock
   fi
-  # check if screen randomly turned itself on
+  # check if screen randomly turned itself on, also apply remote brightness changes from phone
   if(($(cat $brightness_file)<417 && $(cat $brightness_file)!=$(cat $brightness_setting))); then
    sudo su -c "cat $brightness_file > $brightness_setting"
   fi
   if((i==60)); then
    # retry KDE Connect notification (and notify if it connect can't reach phone?)
    if ! kdeconnect-cli -l | grep -q "paired and reachable"; then
+    true
     kdeconnect-cli --refresh
     #notify-send -t 59000 "KDE connect died"
     #killall kdeconnectd; /usr/lib/kdeconnectd &> /dev/null & disown

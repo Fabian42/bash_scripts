@@ -141,12 +141,13 @@ magic(){
  sudo pacman-key --refresh-keys
  echo "y\nn\ny\n" | yay -Scc
  yay -Syyu
- to_rebuild=$(sed "s/[^\\t]+\\t//")
+ to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//")
  echo "REBUILDING: $to_rebuild"
  yay -S $to_rebuild
- echo "FILE CONFLICTS:"
+ echo "FILE ISSUES:"
  search pacnew
  search pacsave
+ sudo find /usr/lib -size 0
 }
 # only the cleaning part of the above
 alias space="echo \"y\nn\ny\n\" | yay -Scc"
@@ -157,7 +158,7 @@ alias kde="killall plasmashell; killall kdeconnectd; kstart5 plasmashell &> /dev
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
-grep(){ /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null;}
+grep(){ if [[ "$@" == *" -P "* ]]; then /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; fi; }
 # repairs secondary Bluetooth tray icon and restarts Bluetooth
 alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
 # restart PulseAudio
@@ -183,8 +184,8 @@ scr(){
 # execute scripts with aliases and functions in .bashrc
 alias e="source"
 # visudo with nano
-export EDITOR="/usr/bin/nano"
-export VISUAL="/usr/bin/nano"
+export EDITOR="nano"
+export VISUAL="nano"
 # diff including subfolders
 alias diff="diff -r"
 # allow downgrades
@@ -450,7 +451,7 @@ alias coal="mn; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousem
 # break stacks of flint in slots, 1, 3-9 and offhand with a shovel in slot 2
 alias gravel="for slot in {1..9}; do for i in {1..70}; do xdotool key \$slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
 # farm crops
-alias crop="xdotool keydown Shift sleep 0.1; for slot in {1..9}; do for i in {1..50}; do xdotool click --delay 8 --repeat 5 1 click --delay 1 3; done; xdotool click --delay 1 5; done; xdotool sleep 0.1 click 3 sleep 0.1 keyup Shift"
+alias crop="xdotool keydown Shift sleep 0.1; for slot in {1..9}; do for i in {1..64}; do xdotool click --delay 8 --repeat 5 1 click --delay 1 3; done; xdotool click --delay 1 5 mouseup 1; done; xdotool sleep 0.1 click 3 sleep 0.1 keyup Shift"
 # figure out which screen Minecraft is on
 mcscreen(){
  export screen="$1"
