@@ -147,7 +147,7 @@ magic(){
  echo "FILE ISSUES:"
  search pacnew
  search pacsave
- sudo find /usr/lib -size 0
+# sudo find /usr/lib -size 0
 }
 # only the cleaning part of the above
 alias space="echo \"y\nn\ny\n\" | yay -Scc"
