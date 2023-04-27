@@ -14,7 +14,7 @@ if [[ -r "$1" && ( "$2" == "d" || "$2" == "t" || "$2" == "g" || "$2" == "b" || "
  # maximum file size allowed, examples:
  if [[ "$2" == "d" ]]; then
  # Discord: 8MiB=8*1024² Bytes
-  limit=8388608
+  limit=26214400
  elif [[ "$2" == "t" ]]; then
  # Telegram: 2000 MiB=2000*1024² Bytes
   limit=2097152000
