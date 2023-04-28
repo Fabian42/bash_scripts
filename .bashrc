@@ -459,7 +459,7 @@ mcscreen(){
   pos=$(xdotool getwindowgeometry $(mc) | grep Position | sed "s/  Position\\: //;s/ \\(screen\\: 0\\)//")
   if [[ "$pos" == "0,413" ]]; then
    export screen="left"
-  elif [[ "$pos" == "1920,53" ]]; then
+  elif [[ "$pos" == "1920,53" || "$pos" == "1920,29" ]]; then
    export screen="right"
   elif [[ "$pos" == "0,53" ]]; then
    export screen="single"
