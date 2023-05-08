@@ -15,6 +15,10 @@ while true; do
   if xset q | grep -q "Caps Lock:   on"; then
    xdotool key Caps_Lock
   fi
+  # enable numlock
+  if xset q | grep -q "Num Lock:    off"; then
+   xdotool key Num_Lock
+  fi
   # check if screen randomly turned itself on, also apply remote brightness changes from phone
   if(($(cat $brightness_file)<417 && $(cat $brightness_file)!=$(cat $brightness_setting))); then
    sudo su -c "cat $brightness_file > $brightness_setting"

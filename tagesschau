@@ -19,7 +19,7 @@ while sleep 60; do
  new_time="$(echo "$page" | grep "<pubDate>" | head -n 1)"
  if [[ "$new_time" != "$old_time" ]]; then
   old_time="$new_time"
-  new_content="$(echo "$page" | head -n 18 | tail -n 3 | grep -v "pubDate" | sed "s/<\\/?[a-z]+>//g;s/^      //")"
+  new_content="$(echo "$page" | head -n 18 | tail -n 3 | grep -v "pubDate" | sed "s/(<|\\&lt\\;)\\/?[a-z]+(>|\\&gt\\;)//g;s/^      //")"
   title="$(echo "$new_content" | head -n 1)"
   text="$(echo "$new_content" | tail -n 1)"
   found_whitelist="false"

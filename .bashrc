@@ -158,7 +158,7 @@ alias kde="killall plasmashell; killall kdeconnectd; kstart5 plasmashell &> /dev
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
-grep(){ if [[ "$@" == *" -P "* ]]; then /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; fi; }
+grep(){ if [[ "$@" == *" -P"* ]]; then /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; fi; }
 # repairs secondary Bluetooth tray icon and restarts Bluetooth
 alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
 # restart PulseAudio
@@ -405,6 +405,36 @@ subs(){
 
 # exit VLC after playing media
 alias vlc="vlc --play-and-exit"
+# speed up video 4×
+ff4(){ ffmpeg -i "$1" -filter_complex "[0:v]setpts=0.25*PTS[v];[0:a]atempo=4.0[a]" -map "[v]" -map "[a]" "a4_$1"; }
+
+# pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram
+zp(){
+ # First argument is archive name without ".zip" or ".zip.001" etc., others are files to be packed. If omitted, auto-select all files in current folder that are not subfolders or already archives.
+ out_name="$1"
+ shift
+ if [[ "$@" == "" ]]; then
+  files=()
+  for file in *; do
+   type="$(file "$file")"
+   if ! [[ "$file" =~ .+\.(zip|7t)\.[0-9][0-9][0-9] || "$type" =~ .+" "(directory|"archive data").+ ]]; then
+    files+=("$file")
+   fi
+  done
+ else
+  files=("$@")
+ fi
+ # split archive into Telegram-compatible files, if necessary
+ size=0
+ for file in "${files[@]}"; do
+  ((size+=$(stat --printf="%s" "${files[@]}")))
+ done
+ if (( size > 2097152000 )); then
+  7z a -mx0 -v2097152000b "$out_name".zip "${files[@]}"
+ else
+  7z a -mx0 "$out_name".zip "${files[@]}"
+ fi
+}
 
 ## searches
 # search files everywhere, ignoring case, partial file name, avoid most of the usual "permission denied" error messages and hide the rest
@@ -448,8 +478,8 @@ hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}
 alias bones="mn; xdotool keydown Shift keydown y mousemove 1081 586 click 1 mousemove 1325 446 click 1 mousemove 1086 642 click 1 mousemove 1325 446 click 1 mousemove 1082 695 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1145 594 click 1 mousemove 1325 446 click 1 mousemove 1140 641 click 1 mousemove 1325 446 click 1 mousemove 1133 708 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1196 585 click 1 mousemove 1325 446 click 1 mousemove 1196 648 click 1 mousemove 1325 446 click 1 mousemove 1195 711 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1243 591 click 1 mousemove 1325 446 click 1 mousemove 1250 644 click 1 mousemove 1325 446 click 1 mousemove 1247 701 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1301 600 click 1 mousemove 1325 446 click 1 mousemove 1301 663 click 1 mousemove 1325 446 click 1 mousemove 1313 707 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1366 591 click 1 mousemove 1325 446 click 1 mousemove 1358 645 click 1 mousemove 1325 446 click 1 mousemove 1354 687 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 1399 600 click 1 mousemove 1325 446 click 1 mousemove 1410 637 click 1 mousemove 1325 446 click 1 mousemove 1410 710 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # craft 9×3 mineral items into blocks
 alias coal="mn; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
-# break stacks of flint in slots, 1, 3-9 and offhand with a shovel in slot 2
-alias gravel="for slot in {1..9}; do for i in {1..70}; do xdotool key \$slot sleep 0.1 click 1 sleep 0.1 key 2 sleep 0.1 click 3 sleep 0.1; done; done"
+# break stacks of gravel in slots 2-9 and offhand with a shovel in slot 1
+alias gravel="for slot in {2..9}; do for i in {1..80}; do xdotool key --delay 100 \$slot click --delay 100 1 key --delay 100 1 click --delay 100 3; done; done"
 # farm crops
 alias crop="xdotool keydown Shift sleep 0.1; for slot in {1..9}; do for i in {1..64}; do xdotool click --delay 8 --repeat 5 1 click --delay 1 3; done; xdotool click --delay 1 5 mouseup 1; done; xdotool sleep 0.1 click 3 sleep 0.1 keyup Shift"
 # figure out which screen Minecraft is on
@@ -529,8 +559,8 @@ invmove_skip(){ xdotool key r sleep 0.1; for x in $1; do for y in $2; do if (( x
 alias invmove_2_left="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"1193 1104 1037 964 1193\" 1057 1193 1255 871"
 alias invmove_2_right="invmove_skip \"2913 2985 3057 3128 3200 3273 3344 3416 3487\" \"1011 924 850 780 1011\" 2985 924 3496 692"
 alias invmove_2_single="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"830 747 671 598 830\" 1057 830 1260 516"
-# break an entire inventory of gravel into flint
-allgravel(){ mn; gravel; invmove "$1" 2; gravel; invmove "$1" 2; gravel; invmove "$1" 2; gravel; }
+# break an entire inventory of gravel into flint (start with full Unbreaking 3 shovel)
+allgravel(){ mn; gravel; invmove "$1" 1; gravel; invmove "$1" 1; gravel; invmove "$1" 1; gravel; }
 # farm kelp with an entire inventory of bonemeal
 allkelp(){ mn; hotbar 102; invmove "$1"; hotbar 102; invmove "$1"; hotbar 102; invmove "$1"; hotbar 102; }
 # farm crops with an entire inventory of bonemeal
