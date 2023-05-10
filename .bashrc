@@ -410,8 +410,12 @@ ff4(){ ffmpeg -i "$1" -filter_complex "[0:v]setpts=0.25*PTS[v];[0:a]atempo=4.0[a
 
 # pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram
 zp(){
- # First argument is archive name without ".zip" or ".zip.001" etc., others are files to be packed. If omitted, auto-select all files in current folder that are not subfolders or already archives.
- out_name="$1"
+ # First argument is archive name without ".zip" or ".zip.001" etc., others are files to be packed. If omitted, name is folder name and files are auto-selected: all files in current folder that are not subfolders or already archives
+ if [[ "$1" == "" ]]; then
+  out_name="$(basename "$(readlink -f .)")"
+ else
+  out_name="$1"
+ fi
  shift
  if [[ "$@" == "" ]]; then
   files=()
@@ -427,7 +431,7 @@ zp(){
  # split archive into Telegram-compatible files, if necessary
  size=0
  for file in "${files[@]}"; do
-  ((size+=$(stat --printf="%s" "${files[@]}")))
+  ((size+=$(du -bPs "$file" | sed "s/[ \\t].+//")))
  done
  if (( size > 2097152000 )); then
   7z a -mx0 -v2097152000b "$out_name".zip "${files[@]}"
