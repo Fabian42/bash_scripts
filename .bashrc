@@ -408,7 +408,7 @@ alias vlc="vlc --play-and-exit"
 # speed up video 4×
 ff4(){ ffmpeg -i "$1" -filter_complex "[0:v]setpts=0.25*PTS[v];[0:a]atempo=4.0[a]" -map "[v]" -map "[a]" "a4_$1"; }
 
-# pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram
+# pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram, test afterwards
 zp(){
  # First argument is archive name without ".zip" or ".zip.001" etc., others are files to be packed. If omitted, name is folder name and files are auto-selected: all files in current folder that are not subfolders or already archives
  if [[ "$1" == "" ]]; then
@@ -433,11 +433,8 @@ zp(){
  for file in "${files[@]}"; do
   ((size+=$(du -PsB1 "$file" | sed "s/[ \\t].+//")))
  done
- if (( size > 2097152000 )); then
-  7z a -mx0 -v2097152000b "$out_name".zip "${files[@]}"
- else
-  7z a -mx0 "$out_name".zip "${files[@]}"
- fi
+ # conditional parameters: split archive into Telegram-compatible files if necessary, delete original files if it's a DVD backup and packing succeeded
+ 7z a -mx0 $(if (( size > 2097152000 )); then echo "-v2097152000b"; fi) $(if [[ "$(readline -f .)" == "/home/fabian/Desktop/DVD" ]]; then echo "-sdel"; fi) "$out_name".zip "${files[@]}"
 }
 
 ## searches
