@@ -431,7 +431,7 @@ zp(){
  # split archive into Telegram-compatible files, if necessary
  size=0
  for file in "${files[@]}"; do
-  ((size+=$(du -bPs "$file" | sed "s/[ \\t].+//")))
+  ((size+=$(du -PsB1 "$file" | sed "s/[ \\t].+//")))
  done
  if (( size > 2097152000 )); then
   7z a -mx0 -v2097152000b "$out_name".zip "${files[@]}"
