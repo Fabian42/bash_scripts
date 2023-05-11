@@ -158,7 +158,7 @@ alias kde="killall plasmashell; killall kdeconnectd; kstart5 plasmashell &> /dev
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
-grep(){ if [[ "$@" == *" -P"* ]]; then /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; fi; }
+grep(){ if [[ "$@" == *" -P"* ]]; then /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; fi; }
 # repairs secondary Bluetooth tray icon and restarts Bluetooth
 alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
 # restart PulseAudio
@@ -405,8 +405,27 @@ subs(){
 
 # exit VLC after playing media
 alias vlc="vlc --play-and-exit"
+# util function for ff4 to divide a given timestamp by 4
+div_time4(){
+ sec_in="$(echo $1 | grep -o "[0-9\\.]+$")"
+ rest="$(echo $1 | sed "s/\\:?[0-9\\.]+$//")"
+ min_in="$(echo $rest | grep -o "[0-9]+$")"
+ hour_in="$(echo $rest | sed "s/\\:?[0-9]+$//")"
+ hour=$((hour_in/4))
+ min=$((min_in/4+(hour_in%4*15)))
+ sec="$(qalc -t "$sec_in/4+(0$min_in%4*15)")"
+ echo "$hour:$min:$sec" # everything works out to be "0:0:x" if input is shorter format
+}
 # speed up video 4×
-ff4(){ ffmpeg -i "$1" -filter_complex "[0:v]setpts=0.25*PTS[v];[0:a]atempo=4.0[a]" -map "[v]" -map "[a]" "a4_$1"; }
+ff4(){
+ if [[ "$2" != "" ]]; then
+  start="-ss $(div_time4 "$2")"
+  if [[ "$3" != "" ]]; then
+   end="-t $(div_time4 "$3")"
+  fi
+ fi
+ ffmpeg -i "$1" -crf 1 $start $end -filter_complex "[0:v]setpts=0.25*PTS[v];[0:a]atempo=4.0[a]" -map "[v]" -map "[a]" "a4_$1"
+}
 
 # pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram, test afterwards
 zp(){
