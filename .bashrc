@@ -141,7 +141,7 @@ magic(){
  sudo pacman-key --refresh-keys
  echo "y\nn\ny\n" | yay -Scc
  yay -Syyu
- to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//")
+ to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//" | tr "\n" " ")
  echo "REBUILDING: $to_rebuild"
  yay -S $to_rebuild
  echo "FILE ISSUES:"
@@ -158,7 +158,7 @@ alias kde="killall plasmashell; killall kdeconnectd; kstart5 plasmashell &> /dev
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
-grep(){ if [[ "$@" == *" -P"* ]]; then /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; fi; }
+grep(){ if [[ "$@" == *-P* ]]; then /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; fi; }
 # repairs secondary Bluetooth tray icon and restarts Bluetooth
 alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
 # restart PulseAudio
@@ -169,6 +169,7 @@ alias mic="for i in {0..9999}; do pactl set-source-volume @DEFAULT_SOURCE@ 100%;
 scr(){
  if [ -e "$1.sh" ]; then
   echo "File already exists!"
+  perm "$1.sh"
   if [[ ! "$(cat "$1.sh" | head -n 1)" =~ ^\#!" "*\/bin\/bash$ ]]; then
    echo "Adding #!/bin/bash and source /home/fabian/hdd/d/programs/bash_scripts/sane"
    (echo "#!/bin/bash\nsource /home/fabian/hdd/d/programs/bash_scripts/sane"; cat "$1.sh") | sponge "$1.sh"
@@ -221,7 +222,7 @@ shopt -s cdspell
 # switching to directories without "cd"
 shopt -s autocd
 # ignore consecutive duplicate commands, anything that starts with a space and some specific commands in history and up-arrow list
-HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu:shutdown"
+HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu:shutdown:pachist"
 # quit
 alias q="exit"
 # search console history
@@ -453,7 +454,7 @@ zp(){
   ((size+=$(du -PsB1 "$file" | sed "s/[ \\t].+//")))
  done
  # conditional parameters: split archive into Telegram-compatible files if necessary, delete original files if it's a DVD backup and packing succeeded
- 7z a -mx0 $(if (( size > 2097152000 )); then echo "-v2097152000b"; fi) $(if [[ "$(readline -f .)" == "/home/fabian/Desktop/DVD" ]]; then echo "-sdel"; fi) "$out_name".zip "${files[@]}"
+ 7z a -mx0 $(if (( size > 2097152000 )); then echo "-v2097152000b"; fi) $(if [[ "$(readlink -f .)" == "/home/fabian/Desktop/DVD" ]]; then echo "-sdel"; fi) "$out_name".zip "${files[@]}"
 }
 
 ## searches
@@ -489,9 +490,9 @@ mc(){
 # minimize the console window before doing anything else
 alias mn="xdotool getactivewindow windowminimize; sleep 1"
 # filter latest Minecraft log
-log2(){ cat $drive/minecraft/logs/latest.log | grep -i "$1";}
+log2(){ cat /home/fabian/.local/share/PrismLauncher/instances/SL/.minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat $drive/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
+log(){ cat /home/fabian/.local/share/PrismLauncher/instances/SL/.minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
 # use all items on a full hotbar, optional argument of clicks per slot
 hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}; do i=0; while ((i++<max)); do xdotool click --delay 50 1; done; xdotool click 5; done; }
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
@@ -588,23 +589,17 @@ allcrop(){ mn; crop; invmove "$1"; crop; invmove "$1"; crop; invmove "$1"; crop;
 # use stacks 2..9 of bonemeal on cocoa beans
 alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 1 click 1 click 1 click 1 sleep 0.1 key 1 mousedown 3 sleep 0.3 mouseup 3; done; done"
 # play Slicedlime stream in VLC
-sl(){ prime-run vlc --rate 1.01 --play-and-exit $(youtube-dl -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
-# launch Minecraft with minimum settings (commented out, because "Dynamic FPS" makes lowering settings for AFK obsolete)
-#mn(){ (
-#  rm /home/fabian/.minecraft/launcher_profiles.json
-#  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
-#  rm /home/fabian/hdd/d/minecraft/options.txt
-#  cp /home/fabian/hdd/d/minecraft/options_min.txt /home/fabian/hdd/d/minecraft/options.txt
-#  prime-run /usr/bin/minecraft-launcher
-# ) & xdotool key q sleep 0.1 key return
-#}
+sl(){ prime-run vlc --rate 1.01 --play-and-exit $(yt-dlp -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # launch Minecraft with maximum settings
 m(){ (
-#  rm /home/fabian/.minecraft/launcher_profiles.json
-#  cp /home/fabian/.minecraft/launcher_profiles_backup.json /home/fabian/.minecraft/launcher_profiles.json
   rm /home/fabian/hdd/d/minecraft/options.txt
   cp /home/fabian/hdd/d/minecraft/options_max.txt /home/fabian/hdd/d/minecraft/options.txt
-  prime-run /usr/bin/minecraft-launcher
+  if [[ "$1" == "1" ]]; then
+   shift
+   prime-run prismlauncher -l SL -s "mc.slicedlime.tv" -a FaRo1 $@
+  else
+   prime-run prismlauncher -l SL -s "mc.slicedlime.tv" -a FaRo3 $@
+  fi
  ) & xdotool key q sleep 0.1 key return
 }
 
@@ -664,7 +659,7 @@ un(){ sudo pacman -Rn $(pack_by_command $*); }
 alias now="date \"+%H:%M:%S\""
 # package history
 pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
-pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P "\\] (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
+pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
 # maximum temperature of any component
 alias sen="sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+ C\" | grep -oE \"[0-90-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
 # watch maximum temperature

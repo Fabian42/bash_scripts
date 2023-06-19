@@ -9,7 +9,7 @@
 # potentially multiple tracks for SpaceX streams?
 --video-multistreams --audio-multistreams
 # potential adblock
-#--sponsorblock-remove "sponsor,selfpromo,interaction,preview,music_offtopic" --sponsorblock-mark all
+--sponsorblock-remove "intro,sponsor,selfpromo,interaction,preview,music_offtopic,outro" --sponsorblock-mark all
 # chapters
 --embed-chapters
 # delete progress bar after download has finished, using black magic

@@ -13,7 +13,7 @@ if [[ -r "$1" && ( "$2" == "d" || "$2" == "t" || "$2" == "g" || "$2" == "b" || "
  in="$1"
  # maximum file size allowed, examples:
  if [[ "$2" == "d" ]]; then
- # Discord: 8MiB=8*1024² Bytes
+ # Discord: 25MiB=25*1024² Bytes
   limit=26214400
  elif [[ "$2" == "t" ]]; then
  # Telegram: 2000 MiB=2000*1024² Bytes
@@ -22,7 +22,7 @@ if [[ -r "$1" && ( "$2" == "d" || "$2" == "t" || "$2" == "g" || "$2" == "b" || "
  # GermanZero Sharepoint: 2 SI GB=2*1000³ Bytes
   limit=2000000000
  elif [[ "$2" == "b" ]]; then
- # 32bit systems: <2GiB→2*1024³-1 Bytest
+ # 32bit systems: <2GiB→2*1024³-1 Bytes
   limit=2147483647
  else
   limit=$2
