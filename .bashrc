@@ -195,8 +195,8 @@ export DOWNGRADE_FROM_ALA=1
 alias mv="mv -i"
 # no header in ffprobe
 alias ffprobe="ffprobe -hide_banner"
-# make FFMPEG not react to keyboard input, also no header
-alias ffmpeg="ffmpeg -nostdin -hide_banner"
+# make FFMPEG not react to keyboard input, no header, use GPU
+alias ffmpeg="prime-run ffmpeg -nostdin -hide_banner"
 # print syslog properly
 alias journalctl="journalctl --no-pager"
 # normal output of systemctl

@@ -9,41 +9,46 @@ if [[ "url" =~ /* ]]; then
 else
  url="$url""~rss2.xml"
 fi
-curl -s "$url" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" -e "<dcDate/>" | tail -n +15 | sed "s/<\\/?[A-Za-z]+>//g;s/^      //"
-old_time="$(curl -s "$url" | grep "<pubDate>" | head -n 1)"
+# print content from earlier today
+page="$(curl -s "$url")"
+if [[ "$page" = "" ]]; then echo "Article not found!"; exit; fi
+wrap "$(echo "$page" | grep -v -e "<pubDate>" -e "<guid>" -e "<item>" -e "<dcDate/>" | tail -n +15 | sed "s/<\\/?[A-Za-z]+>//g;s/^      //")"
+old_time="$(echo "$page" | grep "<pubDate>" | head -n 1)"
 whitelist=("saporischschja" "akw" "atom" "nuklear" "nuclear" "piwdennoukrajinsk")
-blacklist=("fordert" "fordern" "verurteil" " warnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " " weis".*" zurück" "signal" "drängt auf" "berät" " biete" " will " "^kreml\\: " "befürworte" "getreide" " kriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" " plan" "warn" "besuch" "gespräch" " bitte" " sorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" " reis" "beklag" "sieh" "spr[ei]ch" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" " nenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" " sehen " "\\?$" " droht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" " wohl " " tote" "folter" " grab " "gräber" "zivilist" "räumt .+ ein" "würdig" " rät " " raten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" " wäre" "verspr" "beschuldig" " soll" "fürchte" " vorw(u|ü)rf" " lob" " hoff" "bezeichne" "^lawrow\\: " " mahn" "so lange wie nötig" "empör" "unbefristet" "entsetz" "rufe" " ehr" "olymp" "gedenk" "jahrestag" "inform" "aufgebrochen" "erinner" "athlet" "olymp" "sport" "pipe" "nord[ \\-]?stream" "unterstütz" "blogger" "schweig" "trump" " will" " wohl " "mach.+ verantwortlich")
+blacklist=("fordert" "fordern" "verurteil" "\\bwarnt" "warnen" "empfängt" "empfangen" "angeblich" "^russland\\: " "^putin\\: " "\\bweis".*" zurück" "signal" "drängt auf" "berät" "\\bbiete" "\\bwill " "^kreml\\: " "befürworte" "getreide" "\\bkriti" "disku" "erwarte" "besorgt" "wirbt" "werben" "begrüß" "könnte" "wirft .+ vor" "werfen .+ vor" "\\bplan" "warn" "besuch" "gespräch" "\\bbitte" "\\bsorg" "zivil" "prüf" "schule" "kündig.* an" "zweifel" "dank" "optimist" "\\breis" "beklag" "sieh" "spr[ei]ch" "gratul" "erwäg" "betont" "papst" "bekräftig" "zusammen(ge)?kommen" "\\bnenn" "erklär" "in kürze" "zeichen" "ruft .+ auf" "\\bsehen " "\\?$" "\\bdroht" "drohen" "^moskau\\: " "^wohl " "verweis" "kirche" "\\bwohl " "\\btote" "folter" "\\bgrab " "gräber" "zivilist" "räumt .+ ein" "würdig" "\\brät " "\\braten " "grab" "leiche" "sicher[ent].* zu" "pocht auf" "pochen auf" "prognos" "frag" "tode" "wünsch" "wunsch" "opfer" "wollen" "gesteh" "geständnis" "werte" "möglich" "laut russland" "kirill" "aufruf" "\\bwäre" "verspr" "beschuldig" "\\bsoll" "fürchte" "\\bvorw(u|ü)rf" "\\blob" "\\bhoff" "bezeichne" "^lawrow\\: " "\\bmahn" "so lange wie nötig" "empör" "unbefristet" "entsetz" "rufe" "\\behr" "olymp" "gedenk" "jahrestag" "inform" "aufgebrochen" "erinner" "athlet" "olymp" "sport" "pipe" "nord[ \\-]?stream" "unterstütz" "blogger" "schweig" "trump" "\\bwill" "\\bwohl " "mach.+ verantwortlich" "berat" "verletzt" "tele(f|ph)on")
 while sleep 60; do
  page="$(curl -s "$url")"
- if [[ "$page" = "" ]]; then echo "Article not found!"; exit; fi
  new_time="$(echo "$page" | grep "<pubDate>" | head -n 1)"
  if [[ "$new_time" != "$old_time" ]]; then
   old_time="$new_time"
-  new_content="$(echo "$page" | head -n 18 | tail -n 3 | grep -v "pubDate" | sed "s/(<|\\&lt\\;)\\/?[a-z]+(>|\\&gt\\;)//g;s/^      //")"
+  new_content="$(echo "$page" | head -n 18 | tail -n 3 | grep -v "pubDate" | sed "s/(<|\\&lt\\;)[^>\\&]+(>|\\&gt\\;)//g;s/\\&lt\\;\\/?em>//g;s/^      //")"
   title="$(echo "$new_content" | head -n 1)"
+  link="$(echo "$new_content" | head -n 2 | tail -n 1)"
   text="$(echo "$new_content" | tail -n 1)"
+  content_lower="$(echo "$title\n$text" | tr '[:upper:]' '[:lower:]')"
   found_whitelist="false"
   for regex in "${whitelist[@]}"; do
-   if echo "$title\n$text" | tr '[:upper:]' '[:lower:]' | grep -qE ".*$regex.*"; then
+   if echo "$content_lower" | grep -qE ".*$regex.*"; then
     found_whitelist="true"
-    date "+%H:%M:%S"
-    echo "Whitelist: $regex"
     break
    fi
   done
   if [[ "$found_whitelist" = "false" ]]; then
    for regex in "${blacklist[@]}"; do
-    if echo "$title" | tr '[:upper:]' '[:lower:]' | grep -qE ".*$regex.*"; then
+    if echo "$content_lower" | grep -qE ".*$regex.*"; then
      echo "\e[90m"
      date "+%H:%M:%S"
-     wrap "$new_content" "Blacklist: $regex\e[0m"
+     wrap "\e[1m$title\e[0m\e[90m" "\e[4m$link\e[0m" "\e[90m$text" "Blacklist: $regex\e[0m" # grey, bold title, underlined linke
      echo
      continue 2 # don't notify, repeat main loop
     fi
    done
   fi
   date "+%H:%M:%S"
-  wrap "$new_content\n\n"
+  wrap "\e[1m$title\e[0m" "\e[4m$link\e[0m" "$text" # bold title, underlined link
+  if [[ "$found_whitelist" = "true" ]]; then
+   echo "\e[90mWhitelist: $regex\e[0m" # grey regex
+  fi
   echo
   notify-send -u critical "$title"
   if [[ "$title" = "Ende des Liveblogs" || "$title" = "Ende des heutigen Liveblogs" || "$title" = "Ende des Liveblog" || "$title" = "Liveblog endet" ]]; then exit; fi
