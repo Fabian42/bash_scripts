@@ -193,10 +193,10 @@ alias diff="diff -r"
 export DOWNGRADE_FROM_ALA=1
 # ask before overwriting files instead of moving them
 alias mv="mv -i"
-# no header in ffprobe
-alias ffprobe="ffprobe -hide_banner"
 # make FFMPEG not react to keyboard input, no header, use GPU
 alias ffmpeg="prime-run ffmpeg -nostdin -hide_banner"
+# ffprobe outputs to stdout, no banner
+ffprobe(){ /usr/bin/ffprobe  -hide_banner $@ 2>&1; }
 # print syslog properly
 alias journalctl="journalctl --no-pager"
 # normal output of systemctl
@@ -456,12 +456,13 @@ zp(){
  # conditional parameters: split archive into Telegram-compatible files if necessary, delete original files if it's a DVD backup and packing succeeded
  7z a -mx0 $(if (( size > 2097152000 )); then echo "-v2097152000b"; fi) $(if [[ "$(readlink -f .)" == "/home/fabian/Desktop/DVD" ]]; then echo "-sdel"; fi) "$out_name".zip "${files[@]}"
 }
+render_kanji(){ convert -monitor -define registry:temporary-path=/home/fabian/hdd/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "/usr/share/fonts/TTF/Cica-Regular.ttf" label:"$1" render_kanji.png; }
 
 ## searches
 # search files everywhere, ignoring case, partial file name, avoid most of the usual "permission denied" error messages and hide the rest
 search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i "$1";}
 # same as above, but only in the current folder and subfolders and not as root and not hiding errors
-here(){ find . -iwholename "*$1*" | sort | grep -i "$1";}
+here(){ find . -regextype grep -iwholename "*$1*" | sort | grep -i "$1";}
 # same as above, but as root
 shere(){ sudo find . -iwholename "*$1*" | grep -i "$1";}
 # trash all files for search term

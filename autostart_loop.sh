@@ -42,10 +42,11 @@ while true; do
    net="$(myip 2>/dev/null)"
    if [[ "" == "$net" ]]; then
     ((net_down++))
-    if ((net_down%6==1)); then
+    if ((net_down==6)); then
      # repair internet by re-establishing connection, then don't do anything anymore for at least one minute
      notify-send -t 2000 "IP: $net"
      nmcli dev wifi connect Weelaan
+     net_down=0
     fi
    else
     net_down=0
