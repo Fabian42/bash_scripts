@@ -1,12 +1,9 @@
 {"keywords":[
  {"keyword":"test"},
  {"keyword":"abc"},
-
-
  {"keyword":"foo"},
-
  {"keyword":"\# hash"},
  {"keyword":"\\"},
  {"keyword":"\\\# hash"},
  {"keyword":"\\\\"},
- {"keyword":"\\\\\# hashtesting"},]}
+ {"keyword":"\\\\\# hashtesting"}]}
