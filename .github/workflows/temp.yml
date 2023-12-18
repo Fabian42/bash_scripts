@@ -7,7 +7,8 @@ jobs:
       - uses: actions/checkout@v3
       - run: |
           echo "{\"keywords\":[" > temp.json
-          cat temp | sed -E "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;$ ! s/(.+)/ {\"keyword\":\"\\1\"},/;$ s/(.+)/ {\"keyword\":\"\\1\"}/;/^ *$/d" >> temp.json
+          # remove comments, add left text, turn " *" into wildcard=true, add right text, delete empty lines
+          cat temp | sed -E "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;s/^/ {\"keyword\":\"/;s/ \\*$/\\\"\\,\\\"wildcard\\\"\\:\\\"true/;$ ! s/$/\"},/;$ s/$/\"}/;/^ *$/d" >> temp.json
           echo >> temp.json
           echo "]}" >> temp.json
           git config --global user.name "Fabian42"
