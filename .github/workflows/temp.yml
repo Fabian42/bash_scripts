@@ -11,5 +11,5 @@ jobs:
           git config --global user.name "Fabian42"
           git config --global user.email "Fabian42@users.noreply.github.com"
           git add .
-          git commit "temp"
+          git commit -m "temp"
           git push
