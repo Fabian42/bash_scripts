@@ -4,12 +4,9 @@ jobs:
   temp:
     runs-on: ubuntu-latest
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       - run: |
-          echo "testing" >> temp
-          git config --global user.name "Fabian42"
-          git config --global user.email "Fabian42@users.noreply.github.com"
+          echo "hahaha" >> temp
           git add .
           git commit -m "temp"
           git push
