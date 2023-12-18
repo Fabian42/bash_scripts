@@ -1,2 +1,13 @@
 {"keywords":[
+<<<<<<< HEAD
+=======
+ {"keyword":"test"},
+ {"keyword":"abc"},
+ {"keyword":"foo"},
+ {"keyword":"\# hash"},
+ {"keyword":"\\"},
+ {"keyword":"\\\# hash"},
+ {"keyword":"\\\\"},
+ {"keyword":"\\\\\# hashtesting"}
+>>>>>>> 4d781ad2c9a562e693caf5d259f933c8c575ff21
 ]}
