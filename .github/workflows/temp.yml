@@ -33,5 +33,5 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo "{"keywords":[" > temp.json
-          cat a | sed -E "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;s/(.+)/ {\"keyword\":\"\\1\"},/" >> temp.json
+          cat temp | sed -E "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;s/(.+)/ {\"keyword\":\"\\1\"},/" >> temp.json
           echo "]}" > temp.json
