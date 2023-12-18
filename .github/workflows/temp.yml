@@ -33,5 +33,5 @@ jobs:
       - name: Run a multi-line script
         run: |
           echo "hi"
-          cat a | sed "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;s/(.+)/ {\"keyword\":\"\\1\"},/"
+          cat a | sed -E "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;s/(.+)/ {\"keyword\":\"\\1\"},/"
           echo "]}"
