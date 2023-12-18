@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: |
-          echo "{"keywords":[" > temp.json
+          echo "{\"keywords\":[" > temp.json
           cat temp | sed -E "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;s/(.+)/ {\"keyword\":\"\\1\"},/" >> temp.json
           echo "]}" >> temp.json
           git config --global user.name "Fabian42"
