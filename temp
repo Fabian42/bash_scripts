@@ -1,0 +1,11 @@
+test # 123
+abc
+
+# comment
+foo
+# comment
+\# hash
+\\# comment
+\\\# hash
+\\\\# comment
+\\\\\# hash

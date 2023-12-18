@@ -7,6 +7,8 @@ brightness_setting="/sys/class/backlight/intel_backlight/brightness"
 xset -dpms
 xset s off
 caffeine &
+kimtoy &
+gazou &
 
 while true; do
  for i in {1..60}; do
@@ -20,8 +22,10 @@ while true; do
    xdotool key Num_Lock
   fi
   # check if screen randomly turned itself on, also apply remote brightness changes from phone
-  if(($(cat $brightness_file)<417 && $(cat $brightness_file)!=$(cat $brightness_setting))); then
-   sudo su -c "cat $brightness_file > $brightness_setting"
+  brightness="$(cat $brightness_file)"
+  if(($brightness<417 && $brightness!=$(cat $brightness_setting))); then
+#  if(($brightness<3333 && $brightness!=$(cat $brightness_setting))); then
+   sudo su -c "echo $brightness > $brightness_setting"
   fi
   if((i==60)); then
    # retry KDE Connect notification (and notify if it connect can't reach phone?)

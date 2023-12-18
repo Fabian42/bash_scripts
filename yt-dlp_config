@@ -1,5 +1,6 @@
 # shut up and just work
--q --no-warnings -R infinite --fragment-retries infinite --extractor-retries infinite --default-search auto
+-q --no-warnings -R infinite --fragment-retries infinite --default-search auto --check-formats
+#--extractor-retries infinite
 # playback can begin immediately
 #--downloader ffmpeg --downloader-args "FFMPEG:-v 16 -stats"
 # YT login
@@ -8,8 +9,8 @@
 -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part
 # potentially multiple tracks for SpaceX streams?
 --video-multistreams --audio-multistreams
-# potential adblock
---sponsorblock-remove "intro,sponsor,selfpromo,interaction,preview,music_offtopic,outro" --sponsorblock-mark all
+# adblock ("intro" and "outro" not included)
+--sponsorblock-remove "sponsor,selfpromo,interaction,preview,music_offtopic" --sponsorblock-mark all
 # chapters
 --embed-chapters
 # delete progress bar after download has finished, using black magic

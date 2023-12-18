@@ -328,7 +328,7 @@ num(){
   echo "0000 $old"
   for ((i=1; i<=$max; i++)); do
    new=$(ls | grep "^$(printf "%04d" $i)" | wc -l)
-   if [[ "new" == "" ]]; then echo "set to 0"; new=0; fi
+#   if [[ "new" == "" ]]; then echo "set to 0"; new=0; fi
    diff=$(($new-$old))
    case $diff in
     (1)
@@ -408,12 +408,12 @@ subs(){
 alias vlc="vlc --play-and-exit"
 # util function for ff4 to divide a given timestamp by 4
 div_time4(){
- sec_in="$(echo $1 | grep -o "[0-9\\.]+$")"
- rest="$(echo $1 | sed "s/\\:?[0-9\\.]+$//")"
- min_in="$(echo $rest | grep -o "[0-9]+$")"
- hour_in="$(echo $rest | sed "s/\\:?[0-9]+$//")"
- hour=$((hour_in/4))
- min=$((min_in/4+(hour_in%4*15)))
+ sec_in="$(echo "$1" | grep -o "[0-9\\.]+$")"
+ rest="$(echo "$1" | sed "s/\\:?[0-9\\.]+$//")"
+ min_in="$(echo "$rest" | grep -o "[0-9]+$")"
+ hour_in="$(echo "$rest" | sed "s/\\:?[0-9]+$//")"
+ hour="$((hour_in/4))"
+ min="$((min_in/4+(hour_in%4*15)))"
  sec="$(qalc -t "$sec_in/4+(0$min_in%4*15)")"
  echo "$hour:$min:$sec" # everything works out to be "0:0:x" if input is shorter format
 }
@@ -425,7 +425,8 @@ ff4(){
    end="-t $(div_time4 "$3")"
   fi
  fi
- ffmpeg -i "$1" -crf 1 $start $end -filter_complex "[0:v]setpts=0.25*PTS[v];[0:a]atempo=4.0[a]" -map "[v]" -map "[a]" "a4_$1"
+ ffmpeg -i "$1" $start $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 "a4_$1"
+ unset start end
 }
 
 # pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram, test afterwards
@@ -466,7 +467,7 @@ here(){ find . -regextype grep -iwholename "*$1*" | sort | grep -i "$1";}
 # same as above, but as root
 shere(){ sudo find . -iwholename "*$1*" | grep -i "$1";}
 # trash all files for search term
-delhere(){ del $(here "$1");}
+delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
  if [[ "$1" == "" ]]; then
@@ -489,11 +490,11 @@ mc(){
  done
 }
 # minimize the console window before doing anything else
-alias mn="xdotool getactivewindow windowminimize; sleep 1"
+alias mn="xdotool getactivewindow windowminimize; sleep 1; xdotool key Escape"
 # filter latest Minecraft log
-log2(){ cat /home/fabian/.local/share/PrismLauncher/instances/SL/.minecraft/logs/latest.log | grep -i "$1";}
+log2(){ cat /home/fabian/hdd/d/c/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat /home/fabian/.local/share/PrismLauncher/instances/SL/.minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
+log(){ cat /home/fabian/hdd/d/c/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
 # use all items on a full hotbar, optional argument of clicks per slot
 hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}; do i=0; while ((i++<max)); do xdotool click --delay 50 1; done; xdotool click 5; done; }
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
@@ -509,11 +510,11 @@ mcscreen(){
  export screen="$1"
  if [[ "$screen" == "" ]]; then
   pos=$(xdotool getwindowgeometry $(mc) | grep Position | sed "s/  Position\\: //;s/ \\(screen\\: 0\\)//")
-  if [[ "$pos" == "0,413" ]]; then
+  if [[ "$pos" == "0,412" ]]; then
    export screen="left"
-  elif [[ "$pos" == "1920,53" || "$pos" == "1920,29" ]]; then
+  elif [[ "$pos" == "1920,52" || "$pos" == "1920,29" ]]; then
    export screen="right"
-  elif [[ "$pos" == "0,53" ]]; then
+  elif [[ "$pos" == "0,52" ]]; then
    export screen="single"
   else
    echo "Screen not provided and couldn't be figured out! Whatever called this will probably mess up now."
@@ -593,13 +594,13 @@ alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(yt-dlp -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # launch Minecraft with maximum settings
 m(){ (
-  rm /home/fabian/hdd/d/minecraft/options.txt
-  cp /home/fabian/hdd/d/minecraft/options_max.txt /home/fabian/hdd/d/minecraft/options.txt
+#  rm /home/fabian/hdd/d/minecraft/options.txt
+#  cp /home/fabian/hdd/d/minecraft/options_max.txt /home/fabian/hdd/d/minecraft/options.txt
   if [[ "$1" == "1" ]]; then
    shift
    prime-run prismlauncher -l SL -s "mc.slicedlime.tv" -a FaRo1 $@
   else
-   prime-run prismlauncher -l SL -s "mc.slicedlime.tv" -a FaRo3 $@
+   prime-run prismlauncher -l SL2 -s "mc.slicedlime.tv" -a FaRo3 $@
   fi
  ) & xdotool key q sleep 0.1 key return
 }
@@ -612,8 +613,8 @@ alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
 # Jisho search with (almost) no limit
 alias ji="jisho -n999"
 # temporary download commands until dl is done
-alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --check-formats --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig\" --embed-subs"
-dlm(){ yt-dlp -q --no-warnings -i --retries infinite --fragment-retries infinite -o "%(playlist_index)04i_%(uploader)s_-_%(title)s_%(id)s.%(ext)s_temp" --restrict-filenames -f bestaudio/best --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
+alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig\" --embed-subs"
+dlm(){ yt-dlp -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s_temp" -f bestaudio/best --no-exec --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
 # fix internet
 alias net="nmcli dev wifi connect Weelaan; q"
 
@@ -654,6 +655,8 @@ about(){
 }
 # Uninstallation by package or command name, also deletes files
 un(){ sudo pacman -Rn $(pack_by_command $*); }
+# move Discord config files to new location after package upgrade, because updater is disabled via mod, because it often refuses to start otherwise
+fixdiscord(){ cd /home/fabian/.config/discord; version="$(ls -1 | grep "^0\\.0\\.")"; mv "$version" "0.0.$(($(echo "$version" | sed "s/0\\.0\\.//")+1))"; yay -S "openasar-git"; }
 
 ## misc
 # Prints the current time. Useful for scripts.
