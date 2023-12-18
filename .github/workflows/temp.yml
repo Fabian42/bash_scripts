@@ -8,6 +8,7 @@ jobs:
       - run: |
           echo "{\"keywords\":[" > temp.json
           cat temp | sed -E "s/(^|[^\\\\\\n])((\\\\\\\\)*) *\\#.+/\\1\\2/;$ ! s/(.+)/ {\"keyword\":\"\\1\"},/;$ s/(.+)/ {\"keyword\":\"\\1\"}/;/^ *$/d" >> temp.json
+          echo >> temp.json
           echo "]}" >> temp.json
           git config --global user.name "Fabian42"
           git config --global user.email "Fabian42@users.noreply.github.com"
