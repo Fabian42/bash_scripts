@@ -33,7 +33,7 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  wrap "Spaces between arguments are not necessary if the meaning is clear, so e.g. \"5fNR7\" works. \"m24\" would download index 24 and above as music, not 2 to 4."
  echo
  wrap "All lines in a given file are skipped that begin with any amount (including none) of whitespace and then one of these (case-insensitive):"
- echo "# / \\ * ; % ! | ( { = ¢ £ ⍝ :: <# \$! \$\$ {- @c R: NB. ''' \"\"\" <!-- --[[ --[="
+ echo "# / \\ * ; % ! | ( { = ¢ £ ⍝ :: <# \$! \$\$ {- @c R: NB. ''' \"\"\" <!-- --[[ --[= (?#"
  wrap "Multi-line comments are not supported (prefixes like /* still just apply to that one line). Closing of e.g. HTML comments is not necessary."
  wrap "Comments starting with REM, -- and a few others are not supported because YouTube IDs could start with those. Comments starting with \" or ' are not supported because they can be used to prevent word splitting."
  wrap "These comment indicators come from various programming languages and markdown formats. If you are used to a comment syntax that is not listed here, open an issue on GitHub."

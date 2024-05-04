@@ -79,7 +79,6 @@ unset use_color safe_term match_lhs sh
 
 alias cp="cp -i"                          # confirm before overwriting something
 alias df='df -h'                          # human-readable sizes
-alias free='free -m'                      # show sizes in MB
 alias np='nano -w PKGBUILD'
 alias more=less
 
@@ -147,7 +146,6 @@ magic(){
  echo "FILE ISSUES:"
  search pacnew
  search pacsave
-# sudo find /usr/lib -size 0
 }
 # only the cleaning part of the above
 alias space="echo \"y\nn\ny\n\" | yay -Scc"
@@ -185,8 +183,7 @@ scr(){
 # execute scripts with aliases and functions in .bashrc
 alias e="source"
 # visudo with nano
-export EDITOR="nano"
-export VISUAL="nano"
+export EDITOR="nano" VISUAL="nano"
 # diff including subfolders
 alias diff="diff -r"
 # allow downgrades
@@ -211,6 +208,10 @@ stty intr ^- 2>/dev/null
 stty -ixon 2>/dev/null
 # skip non-issues in shellcheck, list all links at bottom
 alias shellcheck="shellcheck --exclude=SC2164,SC2181,SC2028,SC2010,2002,SC2162 -W 9999"
+# fix language warnings
+export LC_ALL="en_GB.UTF-8" LANG="en_GB.UTF-8" LANGUAGE="en_GB.UTF-8"
+# fix mouse speed
+alias mouse="for device in \$(xinput --list | grep \"ARESON Wireless Mouse\" | grep -o \"id\\=[0-9]+\" | sed \"s/id\\=//\"); do xinput --set-prop \"\$device\" \"libinput Accel Speed\" -0.5; done; q"
 
 ## console
 # forget commands starting with a space
@@ -249,6 +250,8 @@ formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done; }
 alias lower="tr '[:upper:]' '[:lower:]'"
 # yesn't
 alias no="yes 'n' #t"
+# unlink from a child process without having to add something after the command
+unown(){ $@ & disown; }
 
 ## files
 # always list all files that actually exist, in better order
@@ -382,7 +385,7 @@ mp3(){
 }
 
 # usual Git workflow to upload local changes
-alias commit="git diff; git add .; git status; read -p \"Press Enter to continue.\"; git commit --no-status; git push"
+alias commit="git diff; git add -A .; git status; read -p \"Press Enter to continue.\"; git commit --no-status; git push"
 # print subtitles from video
 subs(){
  stream=0
@@ -405,7 +408,7 @@ subs(){
 #}
 
 # exit VLC after playing media
-alias vlc="vlc --play-and-exit"
+alias vlc="prime-run vlc --play-and-exit"
 # util function for ff4 to divide a given timestamp by 4
 div_time4(){
  sec_in="$(echo "$1" | grep -o "[0-9\\.]+$")"
@@ -442,7 +445,8 @@ zp(){
   files=()
   for file in *; do
    type="$(file "$file")"
-   if ! [[ "$file" =~ .+\.(zip|7t)\.[0-9][0-9][0-9] || "$type" =~ .+" "(directory|"archive data").+ ]]; then
+   # exclude already packed files, subfolders and symlinks
+   if ! [[ "$file" =~ .+\.(zip|7t)\.[0-9][0-9][0-9] || "$type" =~ .+" "(directory|"archive data").* || "$type" =~ .+" symbolic link to ".+ ]]; then
     files+=("$file")
    fi
   done
@@ -457,7 +461,10 @@ zp(){
  # conditional parameters: split archive into Telegram-compatible files if necessary, delete original files if it's a DVD backup and packing succeeded
  7z a -mx0 $(if (( size > 2097152000 )); then echo "-v2097152000b"; fi) $(if [[ "$(readlink -f .)" == "/home/fabian/Desktop/DVD" ]]; then echo "-sdel"; fi) "$out_name".zip "${files[@]}"
 }
-render_kanji(){ convert -monitor -define registry:temporary-path=/home/fabian/hdd/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "/usr/share/fonts/TTF/Cica-Regular.ttf" label:"$1" render_kanji.png; }
+# Make a huge image out of text, to see all the details. First argument is text, second can be "order" for the "Kanji stroke orders" font
+render_kanji(){ if [[ "$2" == "order" ]]; then font="/usr/share/fonts/kanjistrokeorders/KanjiStrokeOrders.ttf"; else font="/usr/share/fonts/kanjistrokeorders/KanjiStrokeOrders.ttf"; fi; convert -monitor -define registry:temporary-path=/home/fabian/hdd/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "$font" label:"$1" render_kanji.png; }
+# concatenate videos with identical encoding settings, last argument is output
+concat(){ out="${@:$#:$#}"; files="/tmp/$(date "+%Y-%m-%dT%H:%M:%S")"; touch "$files"; for file in ${@:1:$#-1}; do echo "file '$(readlink -f "$file")'" >> "$files"; done; ffmpeg -f concat -safe 0 -i "$files" -c copy "$out"; rm "$files"; }
 
 ## searches
 # search files everywhere, ignoring case, partial file name, avoid most of the usual "permission denied" error messages and hide the rest
@@ -494,7 +501,7 @@ alias mn="xdotool getactivewindow windowminimize; sleep 1; xdotool key Escape"
 # filter latest Minecraft log
 log2(){ cat /home/fabian/hdd/d/c/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat /home/fabian/hdd/d/c/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
+log(){ cat /home/fabian/hdd/d/c/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
 # use all items on a full hotbar, optional argument of clicks per slot
 hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}; do i=0; while ((i++<max)); do xdotool click --delay 50 1; done; xdotool click 5; done; }
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
@@ -512,7 +519,7 @@ mcscreen(){
   pos=$(xdotool getwindowgeometry $(mc) | grep Position | sed "s/  Position\\: //;s/ \\(screen\\: 0\\)//")
   if [[ "$pos" == "0,412" ]]; then
    export screen="left"
-  elif [[ "$pos" == "1920,52" || "$pos" == "1920,29" ]]; then
+  elif [[ "$pos" == "1920,52" || "$pos" == "1920,29" || "$pos" == "1920,28" ]]; then
    export screen="right"
   elif [[ "$pos" == "0,52" ]]; then
    export screen="single"
@@ -590,6 +597,8 @@ allkelp(){ mn; hotbar 102; invmove "$1"; hotbar 102; invmove "$1"; hotbar 102; i
 allcrop(){ mn; crop; invmove "$1"; crop; invmove "$1"; crop; invmove "$1"; crop; xdotool sleep 0.1 click 3 sleep 1 click 1; firstcraft; }
 # use stacks 2..9 of bonemeal on cocoa beans
 alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 1 click 1 click 1 click 1 sleep 0.1 key 1 mousedown 3 sleep 0.3 mouseup 3; done; done"
+# drink 27 water bottles from the main inventory
+alias drink="mn; invmove; for j in {1..3}; do for i in {1..9}; do xdotool mousedown 1 sleep 2 mouseup 1 click 5; done; invmove; done"
 # play Slicedlime stream in VLC
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(yt-dlp -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # launch Minecraft with maximum settings
@@ -656,7 +665,7 @@ about(){
 # Uninstallation by package or command name, also deletes files
 un(){ sudo pacman -Rn $(pack_by_command $*); }
 # move Discord config files to new location after package upgrade, because updater is disabled via mod, because it often refuses to start otherwise
-fixdiscord(){ cd /home/fabian/.config/discord; version="$(ls -1 | grep "^0\\.0\\.")"; mv "$version" "0.0.$(($(echo "$version" | sed "s/0\\.0\\.//")+1))"; yay -S "openasar-git"; }
+fixdiscord(){ cd /home/fabian/.config/discord; version="$(ls -1 | grep "^0\\.0\\.")"; mv "$version" "0.0.$(($(echo "$version" | sed "s/0\\.0\\.//")+1))"; un openasar-git; yay -S discord; yay -S openasar-git; }
 
 ## misc
 # Prints the current time. Useful for scripts.

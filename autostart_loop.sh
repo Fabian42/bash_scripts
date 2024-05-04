@@ -23,8 +23,8 @@ while true; do
   fi
   # check if screen randomly turned itself on, also apply remote brightness changes from phone
   brightness="$(cat $brightness_file)"
-  if(($brightness<417 && $brightness!=$(cat $brightness_setting))); then
-#  if(($brightness<3333 && $brightness!=$(cat $brightness_setting))); then
+#  if(($brightness<417 && $brightness!=$(cat $brightness_setting))); then
+  if(($brightness<3333 && $brightness!=$(cat $brightness_setting))); then
    sudo su -c "echo $brightness > $brightness_setting"
   fi
   if((i==60)); then
@@ -41,20 +41,20 @@ while true; do
     pulseaudio-ctl mute
    fi
   fi
-  if((i%10==0)); then
+#  if((i%10==0)); then
    #notify-send -t 10000 "$(myip 2>/dev/null)"
-   net="$(myip 2>/dev/null)"
-   if [[ "" == "$net" ]]; then
-    ((net_down++))
-    if ((net_down==6)); then
-     # repair internet by re-establishing connection, then don't do anything anymore for at least one minute
-     notify-send -t 2000 "IP: $net"
-     nmcli dev wifi connect Weelaan
-     net_down=0
-    fi
-   else
-    net_down=0
-   fi
-  fi
+#   net="$(myip 2>/dev/null)"
+#   if [[ "" == "$net" ]]; then
+#    ((net_down++))
+#    if ((net_down==6)); then
+#     # repair internet by re-establishing connection, then don't do anything anymore for at least one minute
+#     notify-send -t 2000 "IP: $net"
+#     nmcli dev wifi connect Weelaan
+#     net_down=0
+#    fi
+#   else
+#    net_down=0
+#   fi
+#  fi
  done
 done

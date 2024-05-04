@@ -6,7 +6,7 @@
 # YT login
 --cookies-from-browser firefox --mark-watched
 # sane filenames
--o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part
+-o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part --compat-options playlist-index
 # potentially multiple tracks for SpaceX streams?
 --video-multistreams --audio-multistreams
 # adblock ("intro" and "outro" not included)
