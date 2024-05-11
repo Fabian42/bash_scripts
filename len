@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
+source /home/fabian/d/programs/bash_scripts/sane
 
 # split arguments and on \n, but not on spaces
 IFS=$'\n'

@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
+source /home/fabian/d/programs/bash_scripts/sane
 # This script forces a video below a certain size, with the best quality possible for that size. It also converts to MP4, because why not.
 # Exit value is 3 on FFMPEG error, 2 if a so far unsupported file type was provided (currently only certain videos work), 1 if the file couldn't be made small enough, otherwise 0 indicates success and then the last line of output is the path/file that worked. To get the filename in a script without letting "tail" overwrite the exit value, use one of these:
 # temp=$(resize.sh); if(($?==0)); then echo $temp | tail -n 1; fi

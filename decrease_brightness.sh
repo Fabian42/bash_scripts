@@ -1,33 +1,33 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
-file="/home/fabian/hdd/d/programs/bash_scripts/brightness.txt"
-setting="/sys/class/backlight/intel_backlight/brightness"
+source /home/fabian/d/programs/bash_scripts/sane
+file="/home/fabian/d/programs/bash_scripts/brightness.txt"
+setting="/sys/class/backlight/nvidia_wmi_ec_backlight/brightness"
 current=$(cat $setting)
 # brightness probably =100%, definitely >25%
-if((current>104)); then
-#if((current>833)); then
+if((current>64)); then
  # if gamma active, disable, but keep brightness at maximum
- if(($(cat $file)>416)); then
-# if(($(cat $file)>3333)); then
-  echo -n 416 > $file
-#  echo -n 3333 > $file
+ if(($(cat $file)>255)); then
   xcalib -c
+  echo -n 255 > $file
  # otherwise, reduce brightness to 25% (and keep gamma inactive)
  else
-  echo -n 104 > $file
-#  echo -n 833 > $file
-  sudo su -c "echo -n 104 > $setting"
-#  sudo su -c "echo -n 833 > $setting"
+  sudo su -c "echo -n 64 > $setting"
+  echo -n 64 > $file
  fi
-# brightness probably =25%, definitely above minimum
+# brightness probably =25%, definitely >6.25%
+elif((current>16)); then
+ # set brightness to 6.25%
+ sudo su -c "echo -n 15 > $setting"
+ echo -n 16 > $file
+# brightness probably =6.25%, definitely above minimum
 elif((current>1)); then
  # set brightness to minimum
- echo -n 1 > $file
  sudo su -c "echo -n 1 > $setting"
-# brightness probably =minimum, definitely screen on
+ echo -n 1 > $file
+# brightness=minimum
 elif((current>0)); then
  # turn screen off
- echo -n 0 > $file
  sudo su -c "echo -n 0 > $setting"
+ echo -n 0 > $file
 # if screen already off, do nothing
 fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 # allow direct usage of bash scripts like commands
-export PATH="/home/fabian/hdd/d/programs/bash_scripts:$PATH"
+export PATH="/home/fabian/d/programs/bash_scripts:$PATH"
 # aliases in functions (and here) work
 shopt -s expand_aliases
 # all regexes work in sed

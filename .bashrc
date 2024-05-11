@@ -5,16 +5,16 @@
 # export VISUAL="/usr/bin/nano"
 # The purpose of that is to always have these applied, even if I horribly mess up this file.
 
-source /home/fabian/hdd/d/programs/bash_scripts/sane
+source /home/fabian/d/programs/bash_scripts/sane
 
 ## variables
-export drive="/home/fabian/hdd/d"
-wl_id=$(cat /home/fabian/hdd/d/programs/bash_scripts/wl_id.txt)
-tm_id=$(cat /home/fabian/hdd/d/programs/bash_scripts/tm_id.txt) # so far unused
-yt_pw=$(cat /home/fabian/hdd/d/programs/bash_scripts/yt_pw.txt)
+export drive="/home/fabian/d"
+wl_id=$(cat /home/fabian/d/programs/bash_scripts/wl_id.txt)
+tm_id=$(cat /home/fabian/d/programs/bash_scripts/tm_id.txt) # so far unused
+yt_pw=$(cat /home/fabian/d/programs/bash_scripts/yt_pw.txt)
 
 # easier to remember command for editing this file
-alias aka="nano -Ll +119 /home/fabian/hdd/d/programs/bash_scripts/.bashrc; source /home/fabian/hdd/d/programs/bash_scripts/.bashrc"
+alias aka="nano -Ll +119 /home/fabian/d/programs/bash_scripts/.bashrc; source /home/fabian/d/programs/bash_scripts/.bashrc"
 # increase console history size from 500 to unlimited
 HISTSIZE=
 HISTFILESIZE=
@@ -125,7 +125,7 @@ path(){ cd "$(readlink -f "$(pwd)")"; pwd;}
 # all newly created files and folders have all permissions, except execution (in some way, but not another?)
 umask 000
 # open Dolphin in the right location, with dark theme and not as a tab (geometry gets ignored, but makes "--new-window" actually work)
-alias dolphin="dolphin -stylesheet /home/fabian/hdd/d/programs/bash_scripts/dolphin_dark.qss --new-window --geometry 0x0 . & disown"
+alias dolphin="dolphin . & disown"
 # don't ask for password for "su"
 alias su="sudo su"
 # sudo make me an iotop sandwhich
@@ -133,7 +133,7 @@ alias iotop="sudo iotop"
 # sudo make me a bandwhich sandwhich
 alias bandwhich="sudo bandwhich"
 # sudo make me a downgrade sandwhich
-alias downgrade="sudo downgrade"
+#alias downgrade="sudo downgrade"
 # fix broken updates
 magic(){
  sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable
@@ -158,48 +158,48 @@ alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
 grep(){ if [[ "$@" == *-P* ]]; then /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; fi; }
 # repairs secondary Bluetooth tray icon and restarts Bluetooth
-alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; (blueman-applet &> /dev/null & disown); exit"
-# restart PulseAudio
-alias pulse="systemctl --user restart pulseaudio.service; exit"
+alias blu="systemctl restart bluetooth; sleep 1; killall blueman-applet; blueman-applet &> /dev/null & disown; exit"
+# restart Pipewire
+alias pipe="systemctl --user restart pipewire.service; exit"
 # stop microphone volume from changing randomly
-alias mic="for i in {0..9999}; do pactl set-source-volume @DEFAULT_SOURCE@ 100%; sleep 10; done"
+#alias mic="for i in {0..9999}; do pactl set-source-volume @DEFAULT_SOURCE@ 100%; sleep 10; done"
 # create a new script file here
 scr(){
  if [ -e "$1.sh" ]; then
   echo "File already exists!"
   perm "$1.sh"
   if [[ ! "$(cat "$1.sh" | head -n 1)" =~ ^\#!" "*\/bin\/bash$ ]]; then
-   echo "Adding #!/bin/bash and source /home/fabian/hdd/d/programs/bash_scripts/sane"
-   (echo "#!/bin/bash\nsource /home/fabian/hdd/d/programs/bash_scripts/sane"; cat "$1.sh") | sponge "$1.sh"
+   echo "Adding #!/bin/bash and source /home/fabian/d/programs/bash_scripts/sane"
+   (echo "#!/bin/bash\nsource /home/fabian/d/programs/bash_scripts/sane"; cat "$1.sh") | sponge "$1.sh"
   fi
   sleep 1
  else
   touch "$1.sh"
   sudo chmod -R 777 "$1.sh"
-  echo "#!/bin/bash\nsource /home/fabian/hdd/d/programs/bash_scripts/sane" > "$1.sh"
+  echo "#!/bin/bash\nsource /home/fabian/d/programs/bash_scripts/sane" > "$1.sh"
  fi
  nano -lL +3 "$1.sh"
 }
 # execute scripts with aliases and functions in .bashrc
-alias e="source"
+#alias e="source"
 # visudo with nano
 export EDITOR="nano" VISUAL="nano"
 # diff including subfolders
 alias diff="diff -r"
 # allow downgrades
-export DOWNGRADE_FROM_ALA=1
+#export DOWNGRADE_FROM_ALA=1
 # ask before overwriting files instead of moving them
 alias mv="mv -i"
 # make FFMPEG not react to keyboard input, no header, use GPU
 alias ffmpeg="prime-run ffmpeg -nostdin -hide_banner"
 # ffprobe outputs to stdout, no banner
-ffprobe(){ /usr/bin/ffprobe  -hide_banner $@ 2>&1; }
+ffprobe(){ /usr/bin/ffprobe -hide_banner $@ 2>&1; }
 # print syslog properly
 alias journalctl="journalctl --no-pager"
 # normal output of systemctl
 alias systemctl="systemctl --no-pager"
 # make help pages actually print to STDOUT properly
-alias man="echo \"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\" | man -a -P cat"
+alias man="yes \"\" | man -a -P cat"
 # original quality and correct colours for PNGs
 alias convert="convert -quality 100 -strip -auto-orient"
 # don't interrupt tasks with Ctrl+C
@@ -211,7 +211,7 @@ alias shellcheck="shellcheck --exclude=SC2164,SC2181,SC2028,SC2010,2002,SC2162 -
 # fix language warnings
 export LC_ALL="en_GB.UTF-8" LANG="en_GB.UTF-8" LANGUAGE="en_GB.UTF-8"
 # fix mouse speed
-alias mouse="for device in \$(xinput --list | grep \"ARESON Wireless Mouse\" | grep -o \"id\\=[0-9]+\" | sed \"s/id\\=//\"); do xinput --set-prop \"\$device\" \"libinput Accel Speed\" -0.5; done; q"
+#alias mouse="for device in \$(xinput --list | grep \"ARESON Wireless Mouse\" | grep -o \"id\\=[0-9]+\" | sed \"s/id\\=//\"); do xinput --set-prop \"\$device\" \"libinput Accel Speed\" -0.5; done; q"
 
 ## console
 # forget commands starting with a space
@@ -233,7 +233,7 @@ hi(){ if [[ "$1" == "" ]]; then history; else history | grep -i "$@" | grep -i "
 # Only split on newlines for "for" loops, not on spaces from now on.
 alias nl="IFS=$'\n'"
 # output matching lines from this file
-alias akac="cat /home/fabian/hdd/d/programs/bash_scripts/.bashrc | grep"
+alias akac="cat /home/fabian/d/programs/bash_scripts/.bashrc | grep"
 # highlight parts of an output
 hl(){
  cmd="echo \"\$line\" | grep -e \"\""
@@ -249,9 +249,9 @@ formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done; }
 # lowercase a string
 alias lower="tr '[:upper:]' '[:lower:]'"
 # yesn't
-alias no="yes 'n' #t"
+alias no="yes 'n'" #t
 # unlink from a child process without having to add something after the command
-unown(){ $@ & disown; }
+#unown(){ $@ & disown; }
 
 ## files
 # always list all files that actually exist, in better order
@@ -289,7 +289,7 @@ c(){
 }
 
 # quickly switch to "bash_scripts" repository
-alias g="c /home/fabian/hdd/d/programs/bash_scripts"
+alias g="c /home/fabian/d/programs/bash_scripts"
 
 # visually confirmed deletion to trash
 del(){
@@ -462,7 +462,7 @@ zp(){
  7z a -mx0 $(if (( size > 2097152000 )); then echo "-v2097152000b"; fi) $(if [[ "$(readlink -f .)" == "/home/fabian/Desktop/DVD" ]]; then echo "-sdel"; fi) "$out_name".zip "${files[@]}"
 }
 # Make a huge image out of text, to see all the details. First argument is text, second can be "order" for the "Kanji stroke orders" font
-render_kanji(){ if [[ "$2" == "order" ]]; then font="/usr/share/fonts/kanjistrokeorders/KanjiStrokeOrders.ttf"; else font="/usr/share/fonts/kanjistrokeorders/KanjiStrokeOrders.ttf"; fi; convert -monitor -define registry:temporary-path=/home/fabian/hdd/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "$font" label:"$1" render_kanji.png; }
+render_kanji(){ if [[ "$2" == "order" ]]; then font="/usr/share/fonts/kanjistrokeorders/KanjiStrokeOrders.ttf"; else font="/usr/share/fonts/TTF/Cica-Regular.ttf"; fi; convert -monitor -define registry:temporary-path=/home/fabian/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "$font" label:"$1" render_kanji.png; }
 # concatenate videos with identical encoding settings, last argument is output
 concat(){ out="${@:$#:$#}"; files="/tmp/$(date "+%Y-%m-%dT%H:%M:%S")"; touch "$files"; for file in ${@:1:$#-1}; do echo "file '$(readlink -f "$file")'" >> "$files"; done; ffmpeg -f concat -safe 0 -i "$files" -c copy "$out"; rm "$files"; }
 
@@ -499,9 +499,9 @@ mc(){
 # minimize the console window before doing anything else
 alias mn="xdotool getactivewindow windowminimize; sleep 1; xdotool key Escape"
 # filter latest Minecraft log
-log2(){ cat /home/fabian/hdd/d/c/logs/latest.log | grep -i "$1";}
+log2(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat /home/fabian/hdd/d/c/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
+log(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[//;s/\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]//" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
 # use all items on a full hotbar, optional argument of clicks per slot
 hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}; do i=0; while ((i++<max)); do xdotool click --delay 50 1; done; xdotool click 5; done; }
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
@@ -519,9 +519,9 @@ mcscreen(){
   pos=$(xdotool getwindowgeometry $(mc) | grep Position | sed "s/  Position\\: //;s/ \\(screen\\: 0\\)//")
   if [[ "$pos" == "0,412" ]]; then
    export screen="left"
-  elif [[ "$pos" == "1920,52" || "$pos" == "1920,29" || "$pos" == "1920,28" ]]; then
+  elif [[ "$pos" == "1920,58" || "$pos" == "1920,29" || "$pos" == "1920,28" ]]; then
    export screen="right"
-  elif [[ "$pos" == "0,52" ]]; then
+  elif [[ "$pos" == "0,58" ]]; then
    export screen="single"
   else
    echo "Screen not provided and couldn't be figured out! Whatever called this will probably mess up now."
@@ -601,10 +601,10 @@ alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 
 alias drink="mn; invmove; for j in {1..3}; do for i in {1..9}; do xdotool mousedown 1 sleep 2 mouseup 1 click 5; done; invmove; done"
 # play Slicedlime stream in VLC
 sl(){ prime-run vlc --rate 1.01 --play-and-exit $(yt-dlp -f 720p -g https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
-# launch Minecraft with maximum settings
+# launch Minecraft
 m(){ (
-#  rm /home/fabian/hdd/d/minecraft/options.txt
-#  cp /home/fabian/hdd/d/minecraft/options_max.txt /home/fabian/hdd/d/minecraft/options.txt
+#  rm /home/fabian/d/minecraft/options.txt
+#  cp /home/fabian/d/minecraft/options_max.txt /home/fabian/d/minecraft/options.txt
   if [[ "$1" == "1" ]]; then
    shift
    prime-run prismlauncher -l SL -s "mc.slicedlime.tv" -a FaRo1 $@
@@ -618,14 +618,14 @@ m(){ (
 # print public IP addresses
 alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
 # test downloaded DVD archive
-7t(){ IFS=$'\n'; c "Downloads/Telegram Desktop"; for file in $(ls -1 | grep -e "\.zip$" -e "\.zip\.001$"); do 7z t "$file"; done;}
+7t(){ IFS=$'\n'; c "/home/fabian/Downloads/Telegram Desktop"; for file in $(ls -1 | grep -e "\.zip$" -e "\.zip\.001$"); do 7z t "$file"; done;}
 # Jisho search with (almost) no limit
-alias ji="jisho -n999"
+alias ji="jisho" # -n999"
 # temporary download commands until dl is done
 alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig\" --embed-subs"
 dlm(){ yt-dlp -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s_temp" -f bestaudio/best --no-exec --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@"; }
 # fix internet
-alias net="nmcli dev wifi connect Weelaan; q"
+#alias net="nmcli dev wifi connect Weelaan; q"
 
 ## packages
 # get packages by command name, also include the entered term, remove duplicates
@@ -665,22 +665,22 @@ about(){
 # Uninstallation by package or command name, also deletes files
 un(){ sudo pacman -Rn $(pack_by_command $*); }
 # move Discord config files to new location after package upgrade, because updater is disabled via mod, because it often refuses to start otherwise
-fixdiscord(){ cd /home/fabian/.config/discord; version="$(ls -1 | grep "^0\\.0\\.")"; mv "$version" "0.0.$(($(echo "$version" | sed "s/0\\.0\\.//")+1))"; un openasar-git; yay -S discord; yay -S openasar-git; }
+#fixdiscord(){ cd /home/fabian/.config/discord; version="$(ls -1 | grep "^0\\.0\\.")"; mv "$version" "0.0.$(($(echo "$version" | sed "s/0\\.0\\.//")+1))"; un openasar-git; yay -S discord; yay -S openasar-git; }
 
 ## misc
 # Prints the current time. Useful for scripts.
 alias now="date \"+%H:%M:%S\""
 # package history
-pachist_helper_method_do_not_use(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
-pachist(){ if [[ "$1" == "" ]]; then pachist_helper_method_do_not_use | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper_method_do_not_use | grep "$1" | tail -n 100 | grep "$1"; fi;}
+pachist_helper(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
+pachist(){ if [[ "$1" == "" ]]; then pachist_helper | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper | grep "$1" | tail -n 100 | grep "$1"; fi;}
 # maximum temperature of any component
-alias sen="sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\\\+[0-9\\.]+ C\" | grep -oE \"[0-90-9\\\\.]+\" | sed \"s/\\\\.[0-9]//\" | sort -n | tail -1"
+sen(){ sensors coretemp-isa-0000 iwlwifi_1-virtual-0 nvme-pci-6c00 acpitz-acpi-0 | grep -oE "  \\+[0-9\\.]+" | grep -oE "[0-9\\.]+" | sed "s/\\.[0-9]//" | sort -n | tail -1; }
 # watch maximum temperature
 sens(){
   for i in {1..23}; do
   xdotool key Ctrl+plus
  done
- watch -tn1 "sensors coretemp-isa-0000 pch_skylake-virtual-0 acpitz-acpi-0 | grep -oE \"  \\+[0-9\.]+ C\" | grep -oE \"[0-9\\.]+\" | sed \"s/\\.[0-9]//\" | sort -n | tail -1"
+ watch -tn1 sen
 }
 # wait for a process to finish (e.g. VLC)
 waitfor(){ while top -bn1 | grep -q "$1"; do sleep 1; done; }

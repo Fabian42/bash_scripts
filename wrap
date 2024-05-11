@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
+source /home/fabian/d/programs/bash_scripts/sane
 # Once the bug in coreutils is fixed that causes escape sequences to be included in character counts, this entire script (except for the width argument, which has to replace "$(tput cols)") can be replaced with just this:
 # IFS=$'\n'; for line in $*; do echo $line | fold -sw$(tput cols); done
 
@@ -20,9 +20,8 @@ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
  echo "Output:"
  wrap 10 "a bc defff  ghij kp u\e[101mvwx yzä  öüßlmnopqrstuvwxyzäöüßx a\e[0m"
  exit
-fi
-if [[ "$1" =~ ^[0-9]+$ ]]; then
- if(($1!=0)); then width=$1; fi
+elif [[ "$1" =~ ^[1-9][0-9]*$ && "$2" != "" ]]; then
+ width=$1
  shift
 else
  width=$(tput cols)

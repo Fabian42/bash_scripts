@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
+source /home/fabian/d/programs/bash_scripts/sane
 while clipnotify; do
  text="$(xsel -bo)"
  # remove trash from YouTube links

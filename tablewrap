@@ -1,5 +1,5 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
+source /home/fabian/d/programs/bash_scripts/sane
 # Mix of "column" and "fold": two-column table whose right side is properly aligned and also line wraps on spaces instead of in the middle of a word. Also works around escape character issues of coreutils ("fold", "wc" etc.).
 # Prints further lines with indent 2 if the text can't fit in proper tabulated form.
 

@@ -24,3 +24,6 @@ Contents so far:
 * `notepad.sh`: Opens Notepad++ without Windows' awful font blurring and focuses the window.
 
 These are all executable files, despite most missing the "`.sh`" extension. The file names are kept short so that they can be used just like regular commands in a console or script, by having my `programs/bash_scripts` folder in the `PATH` environment variable.
+
+Dependencies for some features: caffeine, clipnotify, gazou-git, iotop, jisho, kimtoy, moreutils, mpris-proxy, Notepad++, rebuild-detector, ttf-cica, ttf-kanjistrokeorders, wmctrl, xcalib, xdotool
+Everything is made to work on my computers and may need adjustments for any other system.

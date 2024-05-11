@@ -1,32 +1,31 @@
 #!/bin/bash
-source /home/fabian/hdd/d/programs/bash_scripts/sane
-file="/home/fabian/hdd/d/programs/bash_scripts/brightness.txt"
-setting="/sys/class/backlight/intel_backlight/brightness"
+source /home/fabian/d/programs/bash_scripts/sane
+file="/home/fabian/d/programs/bash_scripts/brightness.txt"
+setting="/sys/class/backlight/nvidia_wmi_ec_backlight/brightness"
 current=$(cat $setting)
 # screen is off
 if((current==0)); then
  # turn screen on, set brightness to minimum
- echo -n 1 > $file
  sudo su -c "echo -n 1 > $setting"
-# brightness probably =minimum, definitely <25%
-elif((current<104)); then
-#elif((current<833)); then
+ echo -n 1 > $file
+# brightness probably =minimum, definitely <6.25%
+elif((current<16)); then
+ # set brightness to 6.25%
+ sudo su -c "echo -n 16 > $setting"
+ echo -n 16 > $file
+# brightness probably =6.25%, definitely <25%
+elif((current<64)); then
  # set brightness to 25%
- echo -n 104 > $file
-# echo -n 833 > $file
- sudo su -c "echo -n 104 > $setting"
-# sudo su -c "echo -n 833 > $setting"
+ sudo su -c "echo -n 64 > $setting"
+ echo -n 64 > $file
 # brightness probably =25%, definitely <100%
-elif((current<416)); then
-#elif((current<3333)); then
+elif((current<255)); then
  # set brightness to 100%
- echo -n 416 > $file
-# echo -n 3333 > $file
- sudo su -c "echo -n 416 > $setting"
-# sudo su -c "echo -n 3333 > $setting"
+ sudo su -c "echo -n 255 > $setting"
+ echo -n 255 > $file
 # brightness =100%, if gamma inactive, enable
 elif(($(cat $file)<9999)); then
- echo -n 9999 > $file
  xcalib -gc .5 -a
+ echo -n 9999 > $file
 # if gamma already active, do nothing
 fi
