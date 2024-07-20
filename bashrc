@@ -1,0 +1,1 @@
+/home/fabian/d/programs/bash_scripts/.bashrc

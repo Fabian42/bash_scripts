@@ -8,7 +8,12 @@ if((current==0)); then
  # turn screen on, set brightness to minimum
  sudo su -c "echo -n 1 > $setting"
  echo -n 1 > $file
-# brightness probably =minimum, definitely <6.25%
+# brightness probably =minimum, definitely <1.5625%
+elif((current<4)); then
+ # set brightness to 1.5625%
+ sudo su -c "echo -n 4 > $setting"
+ echo -n 4 > $file
+# brightness probably =1.5625, definitely >6.25%
 elif((current<16)); then
  # set brightness to 6.25%
  sudo su -c "echo -n 16 > $setting"

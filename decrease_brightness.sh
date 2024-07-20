@@ -17,9 +17,14 @@ if((current>64)); then
 # brightness probably =25%, definitely >6.25%
 elif((current>16)); then
  # set brightness to 6.25%
- sudo su -c "echo -n 15 > $setting"
+ sudo su -c "echo -n 16 > $setting"
  echo -n 16 > $file
-# brightness probably =6.25%, definitely above minimum
+# brightness probably =6.25%, definitely >1.5625%
+elif((current>4)); then
+ # set brightness to 1.5625%
+ sudo su -c "echo -n 4 > $setting"
+ echo -n 4 > $file
+# brightness probably =1.5625%, definitely above minimum
 elif((current>1)); then
  # set brightness to minimum
  sudo su -c "echo -n 1 > $setting"
