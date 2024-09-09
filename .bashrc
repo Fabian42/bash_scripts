@@ -163,7 +163,7 @@ alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
 grep(){ if [[ "$@" == *-P* ]]; then /usr/bin/grep -i --colour=auto "$@" 2>/dev/null; else /usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; fi;}
 # repairs secondary Bluetooth tray icon and restarts Bluetooth
-alias blu="sudo rmmod btusb; sudo modprobe btusb; systemctl restart bluetooth; sleep 1; bluetoothctl power on; killall blueman-applet; blueman-applet &> /dev/null & disown; exit"
+alias blu="echo \"Removing kernel module…\"; sudo rmmod btusb; echo \"Adding kernel module…\"; sudo modprobe btusb; echo \"Restarting service…\"; systemctl restart bluetooth; sleep 1; echo \"Enabling Bluetooth…\"; bluetoothctl power on; echo \"Stopping tray icon…\"; killall blueman-applet; echo \"Starting tray icon…\"; blueman-applet &> /dev/null & disown; echo \"Done!\"; exit"
 # restart Pulseaudio
 alias pulse="systemctl --user restart pulseaudio; exit"
 # stop microphone volume from changing randomly
@@ -280,7 +280,7 @@ c(){
   ls
   return
  fi # implied "else"
- list=("$(pwd)" "/" "/home/fabian" "/home/fabian/d")
+ list=("$(pwd)" "/home/fabian" "/home/fabian/d" "/")
  nl
  for arg in $(for a in $@; do echo "$a" | sed "s/\\//\\n/g"; done); do # ridiculous way to split arguments by space or slash, but not quoted space
   nl
@@ -495,9 +495,9 @@ delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
  if [[ "$1" == "" ]]; then
-  files="$(find $drive/m/a1/* $drive/m/a2/* $drive/m/a3/* $drive/m/a4/* | sort -u)"
+  files="$(find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* | sort -u)"
  else
-  files="$(find $drive/m/a0/* $drive/m/a1/* $drive/m/a2/* $drive/m/a3/* $drive/m/a4/* -iname "*$1*" | sort -u)"
+  files="$(find $drive/music/a0/* $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* -iname "*$1*" | sort -u)"
  fi
  (prime-run vlc --play-and-exit -Z $files &> /dev/null & disown)
  exit
@@ -626,7 +626,7 @@ m(){ (
    shift
    prime-run prismlauncher -l SL1 -s "mc.slicedlime.tv" -a FaRo1 $@
   else
-   prime-run prismlauncher -l SL1 -s "mc.slicedlime.tv" -a FaRo3 $@
+   prime-run prismlauncher -l SL2 -s "mc.slicedlime.tv" -a FaRo3 $@
   fi
  ) & xdotool key q sleep 0.1 key return
 }
