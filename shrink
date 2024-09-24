@@ -86,10 +86,10 @@ echo "Input file size: $in_size"
 while true; do
  out="$name""_$curr.$ext"
  echo -n "$(date +"%H:%M:%S") testing crf=$curr, filename: $name""_$curr.$ext"
-#######################################################
-#This is where the script will spend 99% of its time! #
- ffmpeg -nostdin -i "$in" -crf $curr -v 16 "$out"     #
-#######################################################
+#############################################################
+# This is where the script will spend 99% of its time!      #
+ ffmpeg -nostdin -i "$in" -crf $curr -c:s copy -v 16 "$out" #
+#############################################################
  if(($?!=0)); then
   echo "\nFFMPEG error!"
   exit 3

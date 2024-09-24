@@ -419,7 +419,7 @@ subs(){
 #}
 
 # exit VLC after playing media
-alias vlc="prime-run vlc --play-and-exit"
+alias vlc="fix_lang prime-run vlc --play-and-exit"
 # util function for ff4 to divide a given timestamp by 4
 div_time4(){
  sec_in="$(echo "$1" | grep -o "[0-9\\.]+$")"
@@ -433,13 +433,18 @@ div_time4(){
 }
 # speed up video 4×
 ff4(){
+ # splitting off options and option parameters fixed quoting issues, otherwise FFMPEG would see "-ss 0:0:0" as a single argument
+ start_prefix=""
+ end_prefix=""
  if [[ "$2" != "" ]]; then
-  start="-ss $(div_time4 "$2")"
+  start_prefix="-ss"
+  start="$(div_time4 "$2")"
   if [[ "$3" != "" ]]; then
-   end="-t $(div_time4 "$3")"
+   end_prefix="-to"
+   end="$(div_time4 "$3")"
   fi
  fi
- ffmpeg -i "$1" $start $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 "a4_$1"
+ ffmpeg -i "$1" $start_prefix $start $end_prefix $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 "a4_$1"
  unset start end
 }
 
@@ -499,7 +504,7 @@ p(){
  else
   files="$(find $drive/music/a0/* $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* -iname "*$1*" | sort -u)"
  fi
- (prime-run vlc --play-and-exit -Z $files &> /dev/null & disown)
+ (fix_lang prime-run vlc --play-and-exit -Z $files &> /dev/null & disown)
  exit
 }
 
@@ -617,7 +622,7 @@ alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 
 # drink 27 water bottles from the main inventory
 alias drink="mn; invmove; for j in {1..3}; do for i in {1..9}; do xdotool mousedown 1 sleep 2 mouseup 1 click 5; done; invmove; done"
 # play Slicedlime stream in VLC
-sl(){ prime-run vlc --rate 1.01 --play-and-exit $(yt-dlp -f 720p -g --cookies-from-browser firefox https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
+sl(){ fix_lang prime-run vlc --rate 1.01 --play-and-exit $(yt-dlp -f 720p -g --cookies-from-browser firefox https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
 # launch Minecraft
 m(){ (
 #  rm /home/fabian/d/minecraft/options.txt
@@ -641,6 +646,7 @@ alias ji="jisho" # -n999"
 # temporary download commands until dl is done
 alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig\" --embed-subs"
 dlm(){ yt-dlp -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s_temp" -f bestaudio/best --no-exec --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@";}
+alias d="c v w; dlp"
 # fix internet
 #alias net="nmcli dev wifi connect Weelaan; q"
 
