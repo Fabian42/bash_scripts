@@ -157,7 +157,7 @@ alias space="echo \"y\nn\ny\n\" | yay -Scc"
 # fix iMage "unable to write pixel cache" on large images
 export TMPDIR="/var/tmp"
 # restart KDE and KDE connect
-alias kde="killall plasmashell; killall kdeconnectd; kstart5 plasmashell &> /dev/null & disown; /usr/lib/kdeconnectd &> /dev/null & disown; exit"
+alias kde="killall kdeconnectd; plasmashell --replace &> /dev/null & disown; /usr/lib/kdeconnectd &> /dev/null & disown; exit"
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
@@ -458,7 +458,7 @@ zp(){
  fi
  shift
  if [[ "$1" == "d" ]]; then
-  limit=26214400
+  limit=10485760
  else
   limit=2097152000
  fi
@@ -500,7 +500,7 @@ delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
  if [[ "$1" == "" ]]; then
-  files="$(find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* | sort -u)"
+  files="$(find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* $drive/temp_music/a0_keep | sort -u)"
  else
   files="$(find $drive/music/a0/* $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* -iname "*$1*" | sort -u)"
  fi
@@ -712,4 +712,4 @@ waitfor(){ while top -bn1 | grep -q "$1"; do sleep 1; done;}
 alias gtop="nvidia-smi"
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
-if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s)", time: $(date "+%H:%M:%S"); fi
+if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s), time: $(date "+%H:%M:%S")"; fi
