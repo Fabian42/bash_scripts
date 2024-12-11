@@ -4,13 +4,13 @@
 # playback can begin immediately
 #--downloader ffmpeg --downloader-args "FFMPEG:-v 16 -stats"
 # YT login
---cookies-from-browser firefox --mark-watched
+#--cookies-from-browser firefox --mark-watched
 # sane filenames
 -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part --compat-options playlist-index
 # potentially multiple tracks for SpaceX streams?
 --video-multistreams --audio-multistreams
 # adblock ("intro" and "outro" not included)
---sponsorblock-remove "sponsor,selfpromo,interaction,preview,music_offtopic" --sponsorblock-mark all
+--sponsorblock-remove "sponsor,selfpromo,interaction,preview,music_offtopic"
 # chapters
 --embed-chapters
 # delete progress bar after download has finished, using black magic

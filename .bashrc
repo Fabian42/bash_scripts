@@ -138,7 +138,7 @@ alias iotop="sudo iotop"
 # sudo make me a bandwhich sandwhich
 alias bandwhich="sudo bandwhich"
 # sudo make me a downgrade sandwhich
-#alias downgrade="sudo downgrade"
+alias downgrade="sudo downgrade"
 # fix broken updates
 magic(){
  sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable
@@ -157,7 +157,7 @@ alias space="echo \"y\nn\ny\n\" | yay -Scc"
 # fix iMage "unable to write pixel cache" on large images
 export TMPDIR="/var/tmp"
 # restart KDE and KDE connect
-alias kde="killall kdeconnectd; plasmashell --replace &> /dev/null & disown; /usr/lib/kdeconnectd &> /dev/null & disown; exit"
+alias kde="echo \"killing KDE…\"; killall -s SIGKILL plasmashell; waitfor plasmashell; echo \"restarting KDE…\"; kstart5 plasmashell & disown"
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
@@ -216,6 +216,10 @@ stty -ixon 2>/dev/null
 alias shellcheck="shellcheck --exclude=SC2164,SC2181,SC2028,SC2010,2002,SC2162 -W 9999"
 # fix mouse speed
 #alias mouse="for device in \$(xinput --list | grep \"ARESON Wireless Mouse\" | grep -o \"id\\=[0-9]+\" | sed \"s/id\\=//\"); do xinput --set-prop \"\$device\" \"libinput Accel Speed\" -0.5; done; q"
+# release all modifier keys and buttons, in case keys or buttons are not doing what they should be doing
+alias release="sleep 1; xdotool keyup Shift keyup Alt keyup Super keyup Ctrl keyup Shift_L keyup Shift_R mouseup 1 mouseup 2 mouseup 3 mouseup 4 mouseup 5; exit"
+# process uptime
+alias process_uptime="ps -eo pid,lstart,cmd | grep"
 
 ## console
 # forget commands starting with a space
@@ -375,9 +379,9 @@ mp3(){
   # filename without path
   name="$(basename "$file")"
   if [[ "$(echo "$file" | grep -E ".mp3$")" == "" ]]; then
-   ffmpeg -i "$file" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 "${name%.*}.mp3"
+   ffmpeg -i "$file" -nostdin -map 0:a:0 -map_metadata -1 -v 16 -acodec libmp3lame -q:a 0 "${name%.*}.mp3"
    if(($?==0)); then
-    rm "$file"
+    del "$file"
    else
     echo "Error encountered, $file kept." 1>&2
    fi
@@ -387,7 +391,7 @@ mp3(){
    mv "$file" "$path""old_$name"
    ffmpeg -i "$path""old_$name" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy "$name"
    if(($?==0)); then
-    rm "$path""old_$name"
+    del "$path""old_$name"
    else
     echo "Error encountered, $path""old_$name kept." 1>&2
    fi
@@ -419,7 +423,7 @@ subs(){
 #}
 
 # exit VLC after playing media
-alias vlc="fix_lang prime-run vlc --play-and-exit"
+alias vlc="fix_lang prime-run vlc --play-and-exit --no-random --no-loop --no-repeat"
 # util function for ff4 to divide a given timestamp by 4
 div_time4(){
  sec_in="$(echo "$1" | grep -o "[0-9\\.]+$")"
@@ -502,9 +506,9 @@ p(){
  if [[ "$1" == "" ]]; then
   files="$(find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* $drive/temp_music/a0_keep | sort -u)"
  else
-  files="$(find $drive/music/a0/* $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* -iname "*$1*" | sort -u)"
+  files="$(find $drive/music/a0/* $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* $drive/temp_music/a0_keep -iname "*$1*" | sort -u)"
  fi
- (fix_lang prime-run vlc --play-and-exit -Z $files &> /dev/null & disown)
+ (fix_lang prime-run vlc --play-and-exit -Z --loop $files &> /dev/null & disown)
  exit
 }
 
@@ -622,7 +626,7 @@ alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 
 # drink 27 water bottles from the main inventory
 alias drink="mn; invmove; for j in {1..3}; do for i in {1..9}; do xdotool mousedown 1 sleep 2 mouseup 1 click 5; done; invmove; done"
 # play Slicedlime stream in VLC
-sl(){ fix_lang prime-run vlc --rate 1.01 --play-and-exit $(yt-dlp -f 720p -g --cookies-from-browser firefox https://www.twitch.tv/slicedlime) & true; sleep 10; exit;}
+sl(){ fix_lang prime-run vlc --rate 1.01 --play-and-exit --no-random --no-loop --no-repeat $(yt-dlp -f "best.2/best" -g --cookies-from-browser firefox "https://www.twitch.tv/$(if [[ "$1" == "" ]]; then echo "slicedlime"; else echo "$1"; fi)") & true; sleep 10; exit;}
 # launch Minecraft
 m(){ (
 #  rm /home/fabian/d/minecraft/options.txt
@@ -645,7 +649,7 @@ alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
 alias ji="jisho" # -n999"
 # temporary download commands until dl is done
 alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig\" --embed-subs"
-dlm(){ yt-dlp -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s_temp" -f bestaudio/best --no-exec --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@";}
+dlm(){ yt-dlp -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s_temp" -f bestaudio/best --no-embed-chapters --no-exec --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@";}
 alias d="c v w; dlp"
 # fix internet
 #alias net="nmcli dev wifi connect Weelaan; q"
@@ -707,7 +711,7 @@ sens(){
  watch -tn1 "/usr/bin/bash -c \"source \"\"$drive\"\"/programs/bash_scripts/.bashrc; sen\""
 }
 # wait for a process to finish (e.g. VLC)
-waitfor(){ while top -bn1 | grep -q "$1"; do sleep 1; done;}
+waitfor(){ while top -bn1 -w512 | grep -v "grep" | grep -q "$1"; do sleep 1; done;}
 # show top GPU usage processes
 alias gtop="nvidia-smi"
 
