@@ -1,10 +1,11 @@
 # shut up and just work
--q --no-warnings -R infinite --fragment-retries infinite --default-search auto --check-formats
-#--extractor-retries infinite
+-q --no-warnings -R 10 --fragment-retries 10 --file-access-retries 10 --extractor-retries 10 --socket-timeout 600 --default-search auto --check-formats --extractor-args "youtube:player-client=default,-tv,web_safari,web_embedded"
+--extractor-retries 16
 # playback can begin immediately
 #--downloader ffmpeg --downloader-args "FFMPEG:-v 16 -stats"
 # YT login
-#--cookies-from-browser firefox --mark-watched
+# --cookies-from-browser "firefox" --mark-watched
+--cookies "/home/fabian/cookies-youtube-com.txt" --mark-watched
 # sane filenames
 -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part --compat-options playlist-index
 # potentially multiple tracks for SpaceX streams?
@@ -16,3 +17,5 @@
 # delete progress bar after download has finished, using black magic
 #--exec "echo \"\033[A\033[2K%(epoch>%H:%M:%S)s %(filepath)s\""
 --exec "echo \"%(epoch>%H:%M:%S)s %(filepath)s\""
+# be nice to the server
+--retry-sleep exp=1:2049:2 --sleep-requests 10 --sleep-interval 10 --sleep-subtitles 10

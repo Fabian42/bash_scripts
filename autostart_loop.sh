@@ -6,9 +6,11 @@ source /home/fabian/d/programs/bash_scripts/.bashrc
 # disable screen off after 10 minutes
 xset -dpms
 xset s off
-caffeine &
+
+# temporary
+while true; do echo "$(now) $(sen)" >> temperature_log; sleep 1; done
+
 # kimtoy &
-gazou &
 
 #while true; do
 # for i in {1..60}; do
