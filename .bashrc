@@ -142,15 +142,15 @@ alias downgrade="sudo downgrade"
 # fix broken updates
 magic(){
  sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable
- sudo pacman-key --refresh-keys
+ yay -Syy archlinux-keyring manjaro-keyring
  echo "y\nn\ny\n" | yay -Scc
  yay -Syyu
  to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//" | tr "\n" " ")
  echo "REBUILDING: $to_rebuild"
  yay -S $to_rebuild
  echo "FILE ISSUES:"
- search pacnew
- search pacsave
+ search "\\.pacnew"
+ search "\\.pacsave"
 }
 # only the cleaning part of the above
 alias space="echo \"y\nn\ny\n\" | yay -Scc"
@@ -523,9 +523,9 @@ delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
  if [[ "$1" == "" ]]; then
-  files="$(find $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* $drive/temp_music/a0_keep | sort -u)"
+  files="$(find $drive/music/a1 $drive/music/a2 $drive/music/a3 $drive/music/a4 $drive/temp_music/a0_keep | sort -u)"
  else
-  files="$(find $drive/music/a0/* $drive/music/a1/* $drive/music/a2/* $drive/music/a3/* $drive/music/a4/* $drive/temp_music/a0_keep -iname "*$1*" | sort -u)"
+  files="$(find $drive/music/a0 $drive/music/a1 $drive/music/a2 $drive/music/a3 $drive/music/a4 $drive/temp_music/a0_keep -iname "*$1*" | sort -u)"
  fi
  (fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat $files &> /dev/null & disown)
  exit
@@ -537,9 +537,8 @@ mc(){
  for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)")$(xdotool search --name "FaRo[13] on SL"); do
   if [[ ! "$(xdotool getwindowname "$id")" =~ .*CopyQ.* ]]; then
    echo "$id"
-   break
   fi
- done
+ done | tail -n 1
 }
 # minimize the console window before doing anything else
 alias mn="xdotool getactivewindow windowminimize; sleep 1; xdotool key Escape"
