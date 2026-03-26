@@ -143,6 +143,7 @@ alias downgrade="sudo downgrade"
 magic(){
  sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable
  yay -Syy archlinux-keyring manjaro-keyring
+ sudo pacman-key --populate archlinux manjaro
  echo "y\nn\ny\n" | yay -Scc
  yay -Syyu
  to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//" | tr "\n" " ")
@@ -184,6 +185,7 @@ scr(){
   touch "$1.sh"
   sudo chmod -R 777 "$1.sh"
   echo "#!/bin/bash\nsource /home/fabian/d/programs/bash_scripts/sane" > "$1.sh"
+  perm "$1.sh"
  fi
  nano -lL +3 "$1.sh"
 }
@@ -228,6 +230,10 @@ alias process_uptime="ps -eo pid,lstart,cmd | grep"
 syslog(){ journalctl -o short-precise -b -"$1"; }
 # disable microphone echo
 alias loop="pactl unload-module module-loopback"
+# align a window to the left side of the screen with the correct size
+alias alignleft="xdotool sleep 0.1 key Super+Left sleep 1 mousemove 1280 720 sleep 0.1 mousedown 1 sleep 0.1 mousemove 2176 720 sleep 1 mouseup 1"
+# un-freeze second monitor
+alias fixscreen="xrandr --output HDMI-1-0 --mode 2560x1440 --refresh 60; xrandr --output HDMI-1-0 --mode 2560x1440 --refresh 144"
 
 ## console
 # forget commands starting with a space
@@ -279,7 +285,7 @@ up(){ if [ "$1" == "" ]; then cd ..; else for((a=0;a<$1;a++)) do cd ..; done; fi
 # go to the previous directory
 back(){ cd "$OLDPWD"; path; ls;}
 # give all permissions to everyone for a file/folder, including subfolders
-perm(){ sudo chown -R "$(whoami)" "$1"; sudo chmod -R 777 "$1"; sudo chattr -Rai "$1";}
+perm(){ sudo chown -Rc --preserve-root "$(whoami)" "$1"; sudo chmod -R 777 "$1"; sudo chattr -Rai "$1";}
 # quick switching to "Downloads", "music", etc.
 export CDPATH=".:/home/fabian:$drive"
 
@@ -338,14 +344,19 @@ del(){
 
 # find duplicate files
 alldiff(){
- for file1 in *; do
-  for file2 in $(ls -1 | grep --after-context=9999 "^$file1\$" | tail -n +2); do
-   diff "$file1" "$file2" &> /dev/null
-   if [[ $? == 0 ]]; then
-    echo "$file1\n$file2\n"
-   fi
-  done
+ for file in *; do
+  if [ -f "$file" ]; then # loop over all regular files, no subfolders
+   size="$(stat --printf="%s" -- "$file")"
+   echo "$size" >> /tmp/sizes
+   echo "$size""/""$file" >> /tmp/files # "/" cannot occur in filename
+  fi
  done
+ for size in $(sort -nur /tmp/sizes); do # for each unique size once…
+  for file in $(grep -Po "(?<=^""$size""\\/).+" /tmp/files); do # for each file with that size…
+   sha256sum "$file"
+  done | uniq -Dw64 # compare only first 64 characters of sha256sum's output, which is the hash, then print all files from each set with at least 2 entries
+ done
+ rm /tmp/sizes /tmp/files
 }
 
 # compare amount of files starting with indices (for example to check progress in sorting out multi-playlist downloads)
@@ -465,7 +476,7 @@ ff4(){
 
 # pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram, test afterwards
 zp(){
- # First argument is archive name without ".zip" or ".zip.001" etc., second is limit (t=Telegram, d=discord), others are files to be packed. If omitted, name is folder name and files are auto-selected: all files in current folder that are not subfolders or already archives
+ # First argument is archive name without ".zip" or ".zip.001" etc., second is limit (t=Telegram, d=discord), others are files to be packed. If omitted, name is folder name and files are auto-selected: all files in current folder that are not subfolders or already archives. If only folder name is given, Telegram-compatible archive of the same name is made from that folder.
  if [[ "$1" == "" ]]; then
   out_name="$(basename "$(readlink -f .)")"
  else
@@ -523,9 +534,9 @@ delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
  if [[ "$1" == "" ]]; then
-  files="$(find $drive/music/a1 $drive/music/a2 $drive/music/a3 $drive/music/a4 $drive/temp_music/a0_keep | sort -u)"
+  files="$(find "$drive/music/a1/" "$drive/music/a2/" "$drive/music/a3/" "$drive/music/a4/" "$drive/temp_music/a0_keep/" -type f | sort -u)"
  else
-  files="$(find $drive/music/a0 $drive/music/a1 $drive/music/a2 $drive/music/a3 $drive/music/a4 $drive/temp_music/a0_keep -iname "*$1*" | sort -u)"
+  files="$(find "$drive/music/a0/" "$drive/music/a1/" "$drive/music/a2/" "$drive/music/a3/" "$drive/music/a4/" "$drive/temp_music/a0_keep" -iname "*$1*" -type f | sort -u)"
  fi
  (fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat $files &> /dev/null & disown)
  exit
@@ -545,9 +556,9 @@ alias mn="xdotool getactivewindow windowminimize; sleep 1; xdotool key Escape"
 # filter latest Minecraft log
 log2(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\: \\[CHAT\\] <([^>]+)>/\\1 \\3:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
+log(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] <([^>]+)>/\\1 \\3:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
 # annual compression:
-# nl; for file in 2023*; do date="$(echo "$file" | grep -o "^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]")"; for line in $(cat $file | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\: \\[CHAT\\] <([^>]+)>/\\1 \\3:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$"); do echo "$date $line"; done; done > chat2023.txt
+# nl; for file in 2024*; do date="$(echo "$file" | grep -o "^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]")"; for line in $(cat $file | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] <([^>]+)>/\\1 \\3:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$"); do echo "$date $line"; done; done > chat2024.txt
 # use all items on a full hotbar, optional argument of clicks per slot
 hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}; do i=0; while ((i++<max)); do xdotool click --delay 50 1; done; xdotool click 5; done;}
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
@@ -555,7 +566,7 @@ alias bones="mn; xdotool keydown Shift keydown y mousemove 1081 586 click 1 mous
 # craft 9×3 mineral items into blocks
 alias coal="mn; xdotool keydown Shift keydown y mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 mousemove 554 442 click 1 mousemove 1325 446 click 1 keyup Shift keyup y"
 # break stacks of gravel in slots 2-9 and offhand with a shovel in slot 1
-alias gravel="for slot in {2..9}; do for i in {1..80}; do xdotool key --delay 100 \$slot click --delay 100 1 key --delay 100 1 click --delay 100 3; done; done"
+alias gravel="for slot in {2..9}; do for i in {1..73}; do xdotool keydown \$slot sleep 0.05 keyup \$slot sleep 0.05 mousedown 1 sleep 0.05 mouseup 1 sleep 0.05 keydown 1 sleep 0.05 keyup 1 sleep 0.05 mousedown 3 sleep 0.39 mouseup 3; done; done"
 # farm crops
 alias crop="xdotool keydown Shift sleep 0.1; for slot in {1..9}; do for i in {1..64}; do xdotool click --delay 8 --repeat 5 1 click --delay 1 3; done; xdotool click --delay 1 5 mouseup 1; done; xdotool sleep 0.1 click 3 sleep 0.1 keyup Shift"
 # figure out which screen Minecraft is on
@@ -563,51 +574,27 @@ mcscreen(){
  export screen="$1"
  if [[ "$screen" == "" ]]; then
   pos="$(xdotool getwindowgeometry $(mc) | grep Position | sed "s/  Position\\: //;s/ \\(screen\\: 0\\)//")"
-  if [[ "$pos" == "0,412" ]]; then
+  if [[ "$pos" == "0,147" ]]; then
    export screen="left"
-  elif [[ "$pos" == "1920,58" || "$pos" == "1920,29" || "$pos" == "1920,28" ]]; then
+  elif [[ "$pos" == "2560,24" ]]; then
    export screen="right"
-  elif [[ "$pos" == "0,58" ]]; then
-   export screen="single"
   else
    echo "Screen not provided and couldn't be figured out! Whatever called this will probably mess up now."
    return
   fi
  fi
 }
-# craft the first available recipe in a crafting table's recipe book
-firstcraft(){
- mcscreen "$1"
- if [[ "$screen" == "left" ]]; then
-  recipe="412 763"
-  output="1445 763"
- elif [[ "$screen" == "right" ]]; then
-  recipe="2653 573"
-  output="3685 583"
- elif [[ "$screen" == "single" ]]; then
-  recipe="413 404"
-  output="1445 402"
- else
-  echo "Invalid screen argument! Whatever called this will probably mess up now."
-  return
- fi
- xdotool keydown Shift sleep 0.1 mousemove $recipe click 1 mousemove $output sleep 0.1 click 1 keyup Shift sleep 0.1
-}
-# move all inventory slot 1 up (wrapping), args: "left"|"right"|"single" (screen), slot number to skip (switch with offhand instead)
+# move all inventory slot 1 up (wrapping), args: "left"|"right" (screen), slot number to skip (switch with offhand instead)
 invmove(){
  mcscreen "$1"
  if [[ "$screen" == "left" ]]; then
-  x_list="980 1057 1123 1198 1267 1340 1411 1484 1554"
-  y_list="1193 1104 1037 964 1193"
-  offhand="1255 871"
+  x_list="1300 1374 1445 1519 1590 1662 1736 1808 1883"
+  y_list="1060 983 906 829 1060"
+  offhand="1576 743"
  elif [[ "$screen" == "right" ]]; then
-  x_list="3221 3292 3365 3436 3509 3580 3653 3725 3797"
-  y_list="1011 924 850 780 1011"
-  offhand="3496 692"
- elif [[ "$screen" == "single" ]]; then # already adjusted for nova single
-  x_list="1304 1376 1449 1516 1594 1663 1736 1810 1881"
-  y_list="1018 932 858 786 1018"
-  offhand="1577 694"
+  x_list="3863 3935 4007 4079 4151 4223 4295 4367 4439"
+  y_list="1000 923 846 769 1000"
+  offhand="4140 680"
  else
   echo "Invalid screen argument! Whatever called this will probably mess up now."
   return
@@ -620,33 +607,27 @@ invmove(){
  for x in $x_list; do
   ((i++))
   for y in $y_list; do
-   if ((i==0$2&&(y==1193||y==1011||y==830))); then # leading 0 against syntax error when there is no skipped slot
+   if ((i==0$2&&(y==1000||y==1060))); then # leading 0 against syntax error when there is no skipped slot
     xdotool mousemove $offhand click --delay 5 1
    else
     xdotool mousemove $x $y click --delay 5 1
    fi
   done
  done
- xdotool key r sleep 0.1 key Escape sleep 0.1 key Escape sleep 0.1
+ xdotool key r sleep 0.1
 }
-# same as above, but the offhand replaces one given slot, args: x list, y list, x to skip, y to skip, x of offhand, y of offhand
-invmove_skip(){ xdotool key r sleep 0.1; for x in $1; do for y in $2; do if (( x==$3 && y==$4 )); then xdotool mousemove $5 $6 click 1; else xdotool mousemove $x $y click 1; fi; done; done; xdotool key r sleep 0.1;}
-# move inventory, replace offhand instead of second hotbar slot (for gravel)
-alias invmove_2_left="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"1193 1104 1037 964 1193\" 1057 1193 1255 871"
-alias invmove_2_right="invmove_skip \"2913 2985 3057 3128 3200 3273 3344 3416 3487\" \"1011 924 850 780 1011\" 2985 924 3496 692"
-alias invmove_2_single="invmove_skip \"980 1057 1123 1198 1267 1340 1411 1484 1554\" \"830 747 671 598 830\" 1057 830 1260 516"
 # break an entire inventory of gravel into flint (start with full Unbreaking 3 shovel)
 allgravel(){ mn; gravel; invmove "$1" 1; gravel; invmove "$1" 1; gravel; invmove "$1" 1; gravel;}
 # farm kelp with an entire inventory of bonemeal
 allkelp(){ mn; hotbar 102; invmove "$1"; hotbar 102; invmove "$1"; hotbar 102; invmove "$1"; hotbar 102;}
 # farm crops with an entire inventory of bonemeal
-allcrop(){ mn; crop; invmove "$1"; crop; invmove "$1"; crop; invmove "$1"; crop; xdotool sleep 0.1 click 3 sleep 1 click 1; firstcraft;}
+allcrop(){ mn; crop; invmove "$1"; crop; invmove "$1"; crop; invmove "$1"; crop; xdotool key Escape;}
 # use stacks 2..9 of bonemeal on cocoa beans
 alias cocoa="mn; for s in {2..9}; do for i in {1..40}; do xdotool key \$s click 1 click 1 click 1 click 1 sleep 0.1 key 1 mousedown 3 sleep 0.3 mouseup 3; done; done"
 # drink 27 water bottles from the main inventory
 alias drink="mn; invmove; for j in {1..3}; do for i in {1..9}; do xdotool mousedown 1 sleep 2 mouseup 1 click 5; done; invmove; done"
 # play Slicedlime stream in VLC
-sl(){ fix_lang prime-run vlc --rate 1.01 --play-and-exit --no-random --no-loop --no-repeat "$(yt-dlp -f "best.2/best" -g --cookies-from-browser "firefox" "https://www.twitch.tv/$(if [[ "$1" == "" ]]; then echo "slicedlime"; else echo "$1"; fi)")" & true; sleep 10; exit;}
+sl(){ fix_lang prime-run vlc --rate 1.01 --play-and-exit --no-random --loop --no-repeat "$(yt-dlp -f "best.2/best" -g --cookies "/home/fabian/cookies-youtube-com.txt" "$(if [[ "$1" == "" ]]; then echo "https://www.youtube.com/@slicedlime/live"; else echo "$1"; fi)")" & true; sleep 10; exit;}
 # launch Minecraft
 m(){ (
 #  rm /home/fabian/d/minecraft/options.txt
@@ -668,8 +649,9 @@ alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
 # Jisho search with (almost) no limit
 alias ji="jisho" # -n999"
 # temporary download commands until dl is done
-alias dlp="yt-dlp -f \"bv*[height<=?1440]+ba/b[height<=?1440]/22/18\" --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig\" --embed-subs --use-postprocessor \"DeArrow:when=pre_process\""
-dlm(){ yt-dlp -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s_temp" -f bestaudio/best --no-embed-chapters --no-exec --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3_temp\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; else ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy -y \"\${file%_temp}\"; fi; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi" "$@";}
+alias dlp="yt-dlp -f \"bv*[height<=?1440]+(ba[format_note*=original]/ba[format_note*=Default]/ba/ba*)/b[height<=?1440]/22/18\" --sub-lang \"en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig\" --embed-subs --recode-video mp4"
+dlm(){ yt-dlp -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" -f "ba*[format_note*=original]/ba*[format_note*=Default]/ba*/b" --no-embed-chapters --no-exec --exec "file=\"{}\"; if [[ \"\$(echo \"\$file\" | grep -E \".mp3\$\")\" == \"\" ]]; then ffmpeg -i \"\$file\" -nostdin -map 0:a -map_metadata -1 -v 16 -q:a 0 -y \"\${file%.*}.mp3\"; if (( \"\$?\" == 0 )); then rm \"\$file\"; echo \"\$(date \"+%H:%M:%S\") \${file%.*}.mp3\"; else echo \"WARNING: Problem encountered while converting \$file, downloaded file was left unchanged.\"; fi; else echo \"WARNING: File already ended with \\\".mp3\\\", metadata etc. left unchanged. Run 'mp3 \$file' to fix.\"; fi" "$@";}
+yt_description(){ id="$(echo "$1" | sed "s/\\.[a-z0-9]{3,4}\$//" | grep -o ".{11}\$")"; yt-dlp --write-description --skip-download --no-exec "https://www.youtube.com/watch?v=""$id"; cat *"$id"".description"; rm *"$id"".description"; }
 alias d="c v wl; dlp"
 # fix internet
 #alias net="nmcli dev wifi connect Weelaan; q"
@@ -731,7 +713,21 @@ sens(){
  watch -tn1 "/usr/bin/bash -c \"source \"\"$drive\"\"/programs/bash_scripts/.bashrc; sen\""
 }
 # wait for a process to finish (e.g. VLC)
-waitfor(){ while top -bn1 -w512 | grep -v "grep" | grep -q "$1"; do sleep 1; done;}
+waitfor(){
+ count=1
+ delay=0
+ if [[ "$2" =~ ^[0-9]+$ ]]; then
+  count=$2
+  delay=$2
+ fi
+ while ((count>0)); do
+  while top -bn1 -w512 | grep -v "grep" | grep -q "$1"; do
+   sleep 1
+  done
+ sleep $delay
+ ((count--))
+ done
+}
 # show top GPU usage processes
 alias gtop="nvidia-smi"
 # generate a random pronouncable name
@@ -745,6 +741,8 @@ random_name(){
  done
  echo
 }
+# Move everything from Swap to RAM. Warning: If >64GB are in RAM+Swap, undefined behaviour might happen, including system crash!
+alias unswap="sudo swapoff -a; sudo swapon -a"
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
 if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s), time: $(date "+%H:%M:%S")"; fi

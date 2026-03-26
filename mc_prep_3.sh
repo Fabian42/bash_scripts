@@ -5,6 +5,7 @@ source ~/.bashrc
 
 time=$(date "+%s")
 window=$(xdotool getactivewindow)
+set +m # suppress "Done" message when launcher process exits
 prime-run prismlauncher -l SL2 -a FaRo3 &>/0 & # open console before MC, but execute commands in it afterwards
 while [ -f "/home/fabian/d/minecraft/logs/latest.log" ] && (( $time > $(stat --printf "%W" "/home/fabian/d/minecraft/logs/latest.log") )); do sleep 1; done
 tail -f "/home/fabian/d/minecraft/logs/latest.log" | grep -qm1 "Creating pipeline for dimension minecraft\\:overworld"
