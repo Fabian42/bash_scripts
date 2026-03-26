@@ -28,3 +28,4 @@ These are all executable files, despite most missing the "`.sh`" extension. The 
 Dependencies for some features: caffeine, clipnotify, gazou-git, iotop, jisho, kimtoy, moreutils, mpris-proxy, Notepad++, rebuild-detector, ttf-cica, ttf-kanjistrokeorders, wmctrl, xcalib, xdotool
 
 Everything is made to work on my computers and may need adjustments for any other system.
+#test
