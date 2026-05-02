@@ -1,0 +1,624 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# Hide the warning if there are many autocomplete entries.
+set completion-query-items 0
+# Instantly show all autocomplete entries, no pagination.
+set page-completions off
+# aliases in functions (and here) work
+shopt -s expand_aliases
+# all regexes work in sed
+alias sed="sed -E"
+# finish line after cat commands, so that command prompt doesn't appear to the right of the last line
+cat(){ echo "$(/data/data/com.termux/files/usr/bin/cat "$@")";}
+# escape sequences work in echo
+alias echo="echo -e"
+# don't warn for technically not necessary backslashes
+grep(){ /data/data/com.termux/files/usr/bin/grep "$@" 2>/dev/null;}
+# increase console history size from 500 to unlimited
+HISTSIZE=
+HISTFILESIZE=
+export EDITOR="/data/data/com.termux/files/usr/bin/nano"
+export VISUAL="/data/data/com.termux/files/usr/bin/nano"
+# easier to remember command for editing this file, also apply changes from file
+alias aka="nano -Ll +26 ~/.bashrc; source ~/.bashrc"
+# just refresh
+alias ak="source ~/.bashrc"
+
+## improvements
+# echo without newline
+alias ech="echo -n"
+# don't append useless newline, show line numbers
+alias nano="nano -Ll"
+# always list all files that actually exist, in better order
+alias ls="ls -A --group-directories-first"
+# "pwd" is a stupid name for "show current path" (also expand links to full path from now on and underlines the path)
+path(){ cd "$(readlink -f "$(pwd)")"; echo "\e[4m$(pwd)\e[0m";}
+# all newly created files and folders have all permissions, except execution (in some way, but not another?)
+umask 000
+# grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
+grep(){ if [[ "$@" == *-P* ]]; then /data/data/com.termux/files/usr/bin/grep -i --colour=auto "$@" 2>/dev/null; else /data/data/com.termux/files/usr/bin/grep -i --colour=auto -E "$@" 2>/dev/null; fi;}
+# create a new script file here
+scr(){
+ if [ -e "$1.sh" ]; then
+  echo "File already exists!"
+  perm "$1.sh"
+  if [[ ! "$(cat "$1.sh" | head -n 1)" =~ ^\#!" "*\/bin\/bash$ ]]; then
+   echo "Adding #! and sane"
+   (echo "#!/data/data/com.termux/files/usr/bin/bash\nsource ~/sane"; cat "$1.sh") | sponge "$1.sh"
+  fi
+  sleep 1
+ else
+  touch "$1.sh"
+  perm "$1.sh"
+  echo "#!/data/data/com.termux/files/usr/bin/bash\nsource ~/sane" > "$1.sh"
+ fi
+ nano -lL +3 "$1.sh"
+}
+# visudo with nano
+export EDITOR="nano"
+export VISUAL="nano"
+# diff including subfolders
+alias diff="diff -r"
+# ask before overwriting files instead of moving them
+alias mv="mv -i"
+# make FFMPEG not react to keyboard input, no header
+alias ffmpeg="ffmpeg -nostdin -hide_banner"
+# ffprobe outputs to stdout, no banner
+ffprobe(){ /data/data/com.termux/files/usr/bin/ffprobe -hide_banner "$@" 2>&1;}
+# make help pages actually print to STDOUT properly
+alias man="yes \"\" | man -a -P cat"
+# original quality and correct colours for PNGs
+alias convert="convert -quality 100 -strip -auto-orient"
+# skip non-issues in shellcheck, list all links at bottom
+alias shellcheck="shellcheck --exclude=SC2164,SC2181,SC2028,SC2010,2002,SC2162 -W 9999"
+# process uptime
+alias process_uptime="ps -eo pid,lstart,cmd | grep"
+
+## console
+# forget commands starting with a space
+HISTCONTROL=ignorespace
+# show time in history
+HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
+# directory name autocorrect
+shopt -s cdspell
+# switching to directories without "cd"
+shopt -s autocd
+# ignore consecutive duplicate commands, anything that starts with a space and some specific commands in history and up-arrow list
+HISTIGNORE="&: :q:q *:h:hi:aka"
+# quit
+alias q="exit"
+# search console history
+h(){ if [[ "$1" == "" ]]; then history | tail -n 100; else history | grep -i "$@" | tail -n 101 | head -n -1 | grep -i "$@"; fi;}
+# search console history, no 100 entries limit
+hi(){ if [[ "$1" == "" ]]; then history; else history | grep -i "$@" | grep -i "$@"; fi;}
+# Only split on newlines for "for" loops, not on spaces from now on.
+alias nl="IFS=$'\n'"
+# output matching lines from this file
+alias akac="cat ~/.bashrc | grep"
+# highlight parts of an output
+hl(){
+ cmd="echo \"\$line\" | grep -e \"\""
+ for arg in $@; do
+  cmd="$cmd -e \"$arg\""
+ done
+ while read line; do
+  eval "$cmd"
+ done
+}
+# output help for formatting codes
+formathelp(){ for i in {0..123}; do echo "\e[$i""m\\\e[$i""m\e[0m"; done;}
+# lowercase a string
+alias lower="tr '[:upper:]' '[:lower:]'"
+# yesn't
+alias no="yes 'n'" #t
+
+## files
+# create folder, ignore if already exists, create all necessary parent folders, immediately switch to it and list files
+mk(){ mkdir -p "$1"; cd "$1"; path; ls;}
+# "up" goes one folder up, "up n" goes n folders up
+up(){ if [ "$1" == "" ]; then cd ..; else for((a=0;a<$1;a++)) do cd ..; done; fi; path; ls;}
+# go to the previous directory
+back(){ cd "$OLDPWD"; path; ls;}
+# give all permissions to everyone for a file/folder, including subfolders
+perm(){ sudo chown -Rc --preserve-root "$(whoami)" "$1"; sudo chmod -Rc 777 "$1"; sudo chattr -Rai "$1";}
+
+# Go to folders and subfolders, print path and list files. Folder names do not have to be typed fully if the beginnings make a unique combination, regex also possible.
+c(){
+ if [[ "$1" == "" ]]; then
+  cd ~ # restore ~ switching without arguments, which is broken by CDPATH containing "."
+  path
+  ls
+  return
+ fi # implied "else"
+ list=("$(pwd)" "~")
+ nl
+ for arg in $(for a in $@; do echo "$a" | sed "s/\\//\\n/g"; done); do # ridiculous way to split arguments by space or slash, but not quoted space
+  nl
+  newlist=($(for path in "${list[@]}"; do for match in $(ls -1 "$path" | grep "^$arg$"); do if [ -d "$path/$match" ]; then echo "$path/$match"; fi; done; done) $( for path in "${list[@]}"; do for match in $(ls -1 "$path" | grep "^$arg."); do if [ -d "$path/$match" ]; then echo "$path/$match"; fi; done; done))
+  if [[ "${#newlist[@]}" == 0 ]]; then
+   echo "Warning: No match found, staying here!"
+   cd "${list[0]}"
+   path
+   ls
+   return
+  fi # implied "else"
+  list=(${newlist[@]})
+ done
+ if (( ${#list[@]} > 1 )); then
+  echo "multiple matches: ${list[@]}"
+ fi
+ cd "${list[0]}"
+ path
+ ls
+}
+
+# find duplicate files
+alldiff(){
+ for file in *; do
+  if [ -f "$file" ]; then # loop over all regular files, no subfolders
+   size="$(stat --printf="%s" -- "$file")"
+   echo "$size" >> ~/sizes
+   echo "$size""/""$file" >> ~/files # "/" cannot occur in filename
+  fi
+ done
+ for size in $(sort -nur ~/sizes); do # for each unique size once…
+  for file in $(grep -Po "(?<=^""$size""\\/).+" ~/files); do # for each file with that size…
+   sha256sum "$file"
+  done | uniq -Dw64 # compare only first 64 characters of sha256sum's output, which is the hash, then print all files from each set with at least 2 entries
+ done
+ rm ~/sizes ~/files
+}
+
+# compare amount of files starting with indices (for example to check progress in sorting out multi-playlist downloads)
+num(){
+ max=$(ls -1 | grep -E "^[0-9]{4}\\_" | tail -n 1 | grep -E -o "^[0-9]{4}" | sed "s/^0*//")
+ if [[ "$max" != "" ]]; then
+  old=$(ls -1 | grep "^0000\\_" | wc -l)
+  echo "0000 $old"
+  for ((i=1; i<=$max; i++)); do
+   new=$(ls | grep "^$(printf "%04d" $i)" | wc -l)
+#   if [[ "new" == "" ]]; then echo "set to 0"; new=0; fi
+   diff=$(($new-$old))
+   case $diff in
+    (1)
+     echo "$i $new \e[93m$diff\e[0m"
+     ;;
+    (2)
+     echo "$i $new \e[33m$diff\e[0m"
+     ;;
+    ([1-9]*)
+     echo "$i $new \e[31m$diff\e[0m"
+     ;;
+    (0 | -*)
+     echo "$i $new \e[32m$diff\e[0m"
+     ;;
+   esac
+   old=$new
+  done
+ fi
+ na=$(ls -1 | grep -E "^NA\\_" | wc -l)
+ if (( $na != 0 )); then
+  echo "NA $na"
+ fi
+}
+
+# convert to MP3 with best quality and remove metadata (from anywhere to current working directory)
+mp3(){
+ if [[ "$1" == "keep" ]]; then keep=1; shift; fi
+ for file in "$@"; do
+  # expand links to full path
+  file="$(readlink -f "$file")"
+  # filename without path
+  name="$(basename "$file")"
+  if [[ "$(echo "$file" | grep -E ".mp3$")" == "" ]]; then
+   ffmpeg -i "$file" -nostdin -map 0:a:0 -map_metadata -1 -v 16 -acodec libmp3lame -q:a 0 "${name%.*}.mp3"
+   if(($?==0&&keep!=1)); then
+    del "$file"
+   else
+    echo "Error encountered, $file kept." 1>&2
+   fi
+  else
+   # path without filename
+   path="${file%$name}"
+   mv "$file" "$path""old_$name"
+   ffmpeg -i "$path""old_$name" -nostdin -map 0:a -map_metadata -1 -v 16 -c:a copy "$name"
+   if(($?==0&&keep!=1)); then
+    del "$path""old_$name"
+   else
+    echo "Error encountered, $path""old_$name kept." 1>&2
+   fi
+  fi
+ done
+}
+
+# print subtitles from video
+subs(){
+ stream=0
+ for lang in $(ffprobe "$1" 2>&1 | grep "Subtitle" | grep -Eo "  Stream \\#0\\:[0-9]+(\\[[0-9]x[0-9]\\])?\\([a-z]+" | sed "s/  Stream \\#0\\:[0-9]+\\(//"); do
+  echo "\nSubtitles #"$stream", language: "$lang
+  ffmpeg -i "$1" -map 0:s:$stream -f srt - -v 16 | grep -v -E -e "^[0-9\\:\\,]{12} \-\-> [0-9\\:\\,]{12}$" -e "^[0-9]+$" -e "^$" | sed "s/\\\\h//g"
+  ((stream++))
+ done
+}
+# util function for ff4 to divide a given timestamp by 4
+div_time4(){
+ sec_in="$(echo "$1" | grep -o "[0-9\\.]+$")"
+ rest="$(echo "$1" | sed "s/\\:?[0-9\\.]+$//")"
+ min_in="$(echo "$rest" | grep -o "[0-9]+$")"
+ hour_in="$(echo "$rest" | sed "s/\\:?[0-9]+$//")"
+ hour="$((hour_in/4))"
+ min="$((min_in/4+(hour_in%4*15)))"
+ sec="$((sec_in/4+(min_in%4*15)))"
+ echo "$hour:$min:$sec" # everything works out to be "0:0:x" if input is shorter format
+}
+# speed up video 4×
+ff4(){
+ # splitting off options and option parameters fixed quoting issues, otherwise FFMPEG would see "-ss 0:0:0" as a single argument
+ start_prefix=""
+ end_prefix=""
+ if [[ "$2" != "" ]]; then
+  start_prefix="-ss"
+  start="$(div_time4 "$2")"
+  if [[ "$3" != "" ]]; then
+   end_prefix="-to"
+   end="$(div_time4 "$3")"
+  fi
+ fi
+ ffmpeg -i "$1" $start_prefix $start $end_prefix $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 "a4_$1"
+ unset start end
+}
+
+# pack files in most compatible way: zip, no compression, file size <2000MiB for Telegram, test afterwards
+zp(){
+ # First argument is archive name without ".zip" or ".zip.001" etc., second is limit (t=Telegram, d=discord), others are files to be packed. If omitted, name is folder name and files are auto-selected: all files in current folder that are not subfolders or already archives. If only folder name is given, Telegram-compatible archive of the same name is made from that folder.
+ if [[ "$1" == "" ]]; then
+  out_name="$(basename "$(readlink -f .)")"
+ else
+  out_name="$1"
+ fi
+ shift
+ if [[ "$1" == "t" || "$1" == "" ]]; then
+  limit=2097152000
+ elif [[ "$1" == "d" ]]; then
+  limit=10485760
+ else
+  limit="$1"
+ fi
+ shift
+ if [[ "$@" == "" ]]; then
+  if [ -d "$out_name" ]; then
+   files="$out_name"
+  else
+   files=()
+   for file in *; do
+    type="$(file "$file")"
+    # exclude already packed files, subfolders and symlinks
+    if ! [[ "$file" =~ .+\.(zip|7t)\.[0-9][0-9][0-9] || "$type" =~ .+" "(directory|"archive data").* || "$type" =~ .+" symbolic link to ".+ ]]; then
+     files+=("$file")
+    fi
+   done
+  fi
+ else
+  files=("$@")
+ fi
+ # split archive into Telegram-compatible files, if necessary
+ size=0
+ for file in "${files[@]}"; do
+  ((size+=$(du -PsB1 "$file" | sed "s/[ \\t].+//")))
+ done
+ # conditional parameters: split archive into Telegram-compatible files if necessary
+ 7z a -mx0 $(if (( size > limit )); then echo "-v""$limit""b"; fi) "$out_name".zip "${files[@]}"
+}
+# make a huge image out of text, to see all the details
+render_kanji(){ convert -monitor -limit memory 1gb -background black -fill white -pointsize 4096 label:"$1" render_kanji.png;}
+# concatenate videos with identical encoding settings, last argument is output
+concat(){ out="${@:$#:$#}"; files="~/temp_""$(date "+%Y-%m-%dT%H:%M:%S")"; touch "$files"; for file in ${@:1:$#-1}; do echo "file '$(readlink -f "$file")'" >> "$files"; done; ffmpeg -f concat -safe 0 -i "$files" -c copy "$out"; rm "$files";}
+
+## searches
+# search files everywhere, ignoring case, partial file name, avoid most of the usual "permission denied" error messages and hide the rest
+search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i "$1";}
+# same as above, but only in the current folder and subfolders and not as root and not hiding errors
+here(){ if [[ "$1" == "" ]]; then find . | sort; else find . -regextype grep -iwholename "*$1*" | sort | grep -i "$1"; fi; }
+
+## Minecraft
+# chat from Minecraft log file
+log(){ cat *.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " -e "\\[automatically reconnected\\]" | grep -i "$1" | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]( [0-9\\:\\.]+)? <([^>]+)>/\\1 \\4:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
+# print Slicedlime stream URL for VLC
+sl(){ $(yt-dlp -f "best.2/best" -g "$(if [[ "$1" == "" ]]; then echo "https://www.youtube.com/@slicedlime/live"; else echo "$1"; fi)");}
+
+## internet
+# print public IP addresses
+alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
+# temporary download command until dl is done
+d(){ yt-dlp -f "bv*[height<=?1080]+(ba[format_note*=original]/ba[format_note*=Default]/ba/ba*)/b[height<=?1080]/22/18" -q -R 10 --fragment-retries 10 --file-access-retries 10 --extractor-retries 10 --socket-timeout 600 --default-search auto --check-formats --extractor-args "youtube:player-client=default,-tv,web_safari,web_embedded" --no-warnings -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part --compat-options playlist-index --sponsorblock-remove "sponsor,selfpromo,interaction,preview,music_offtopic" --plugin-dirs "~" --use-postprocessor "DeArrow:when=pre_process" --retry-sleep exp=5:16:2 --sleep-requests 10 --sleep-interval 10 --sleep-subtitles 10 --limit-rate 500K --min-sleep-interval 10 --max-sleep-interval 20 --recode-video mp4 $@; mv *.mp4 *.mkv *.webm ~/storage/downloads;}
+yt_description(){ id="$(echo "$1" | sed "s/\\.[a-z0-9]{3,4}\$//" | grep -o ".{11}\$")"; yt-dlp --write-description --skip-download --no-exec "https://www.youtube.com/watch?v=""$id"; cat *"$id"".description"; rm *"$id"".description"; }
+
+## misc
+# Prints the current time. Useful for scripts.
+alias now="date \"+%H:%M:%S\""
+# generate a random pronouncable name
+random_name(){
+ alias e="ech"
+ if [[ "$1" =~ ^[0-9]+$ ]]; then syllables=$1; else syllables=3; fi
+ while ((syllables--)); do
+  c="$(($RANDOM%20))"
+  v="$(($RANDOM%5))"
+  if [ $c = 0 ]; then e b; elif [ $c = 1 ]; then e c; elif [ $c = 2 ]; then e d; elif [ $c = 3 ]; then e f; elif [ $c = 4 ]; then e g; elif [ $c = 5 ]; then e h; elif [ $c = 6 ]; then e j; elif [ $c = 7 ]; then e k; elif [ $c = 8 ]; then e l; elif [ $c = 9 ]; then e m; elif [ $c = 10 ]; then e n; elif [ $c = 11 ]; then e p; elif [ $c = 12 ]; then e r; elif [ $c = 13 ]; then e s; elif [ $c = 14 ]; then e t; elif [ $c = 15 ]; then e v; elif [ $c = 16 ]; then e w; elif [ $c = 17 ]; then e x; elif [ $c = 18 ]; then e y; elif [ $c = 19 ]; then e z; fi
+  if [ $v = 0 ]; then e a; elif [ $v = 1 ]; then e e; elif [ $v = 2 ]; then e i; elif [ $v = 3 ]; then e o; elif [ $v = 4 ]; then e u; fi
+ done
+ echo
+}
+
+len(){
+ # split arguments and on \n, but not on spaces
+ IFS=$'\n'
+ # disable * expansion
+ set -f
+ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
+  wrap "Counts characters in a string. Like \"wc -m\", but without counting escape sequences."
+  wrap "Only the longest line length will be returned, in case of line breaks or multiple arguments."
+  wrap "Example usage:"
+  echo "len \"a\\\\nbcd\\\\ne f\" \"ghij\\\\ng\\\\e[101mh\\\\e[0mi\""
+  echo "Output:"
+  len "a\nbcd\ne f" "ghij\ng\e[101mh\e[0mi"
+  wrap "Here the length of the line \"ghij\" was returned."
+  exit
+ fi
+ max=0
+ for line in $*; do
+  arr=($(echo -n "$line" | sed "s/(.)/\\1\\n/g"))
+  esc=0
+  for((pos=0; pos<${#arr[@]}; pos++)); do
+   # "\em"…
+   if [[ "${arr[pos]}" == $'\e' ]]; then
+    ((esc+=2))
+    ((pos++))
+    # "\e[m"…
+    if [[ "${arr[pos]}" == "[" ]]; then
+     ((esc++))
+     ((pos++))
+     # "\e[0m"…/"\e[93m"…/"\e[101m"…
+     while [[ "${arr[pos]}" =~ [0-9] ]]; do
+      ((esc++))
+      ((pos++))
+     done
+    fi
+   fi
+  done
+  ((max=${#arr[@]}-esc>max?${#arr[@]}-esc:max))
+ done
+ echo $max
+}
+
+wrap(){
+ # Once the bug in coreutils is fixed that causes escape sequences to be included in character counts, this entire script (except for the width argument, which has to replace "$(tput cols)") can be replaced with just this:
+ # IFS=$'\n'; for line in $*; do echo $line | fold -sw$(tput cols); done
+ 
+ # split between arguments and on \n, but not on spaces
+ IFS=$'\n'
+ # disable * expansion
+ set -f
+ if [[ "$1" =~ ^(\-\-?|\/)?(h(elp)?|\?)$ && "$2" == "" ]]; then
+  # Ooohh, recursion! Should be fine, because none of these lines is "--help" or similar.
+  wrap "Wraps a text on spaces. A width after which to wrap can be given as first argument, the default is the console's width."
+  wrap "Deals better with escape sequences than \"fold\". Does not handle fullwidth characters yet."
+  echo
+  echo "Usage:"
+  echo "wrap [\e[3mWIDTH\e[0m] \e[3mTEXT\e[0m…"
+  echo
+  echo "Example:"
+  echo "wrap 10 \"a bc defff  ghij kp u\\\\e[101mvwx yzä  öüßlmnopqrstuvwxyzäöüßx a\""
+  echo "Output:"
+  wrap 10 "a bc defff  ghij kp u\e[101mvwx yzä  öüßlmnopqrstuvwxyzäöüßx a\e[0m"
+  exit
+ elif [[ "$1" =~ ^[1-9][0-9]*$ && "$2" != "" ]]; then
+  width=$1
+  shift
+ else
+  width=$(tput cols)
+ fi
+ for line in $*; do
+  arr=($(echo -n "$line" | sed "s/(.)/\\1\\n/g"))
+  line_start=0
+  space_pos=-1
+  # don't print empty line if last line exactly fills limit
+  while((line_start<${#arr[@]})); do
+   curr=$line_start
+   # This goes one further than you might expect, in case there's a space at a line end, which then does not need to be printed. Off-by-one errors are handled at the end.
+   for((out_col=0; out_col<=width; out_col++)); do
+    if((curr>=${#arr[@]})); then
+     # end of line reached, print the rest
+     echo "${arr[@]:line_start}" | sed "s/(.) /\\1/g"
+     continue 3 # for line …
+    fi
+    # Behold, horrible (and yet incomplete) escape sequence detection! Just skips forwards through (known) escape sequences, because extra rounds through the main loop would be more confusing.
+    # "\e"…
+     while [[ "${arr[curr]}" == $'\e' ]]; do
+      ((curr++))
+      # "\e["…
+      if [[ "${arr[curr]}" == "[" ]]; then
+       ((curr++))
+       # "\e[0"…/"\e[93"…/"\e[101"…
+       while [[ "${arr[curr]}" =~ [0-9] ]]; do
+        ((curr++))
+       done
+      fi
+      # final character: "\em"/"\e[m"/"\e[0m"
+      ((curr++))
+     done
+    # remember last space position
+    if [[ "${arr[curr]}" == " " ]]; then
+     space_pos=$curr;
+    fi
+    # regular scanning progress
+    ((curr++))
+   done
+   # if there was a space in this line…
+   if((space_pos>line_start)); then
+    # confusingly, the second index in array slicing is a length, not an end
+    echo "${arr[@]:line_start:space_pos-line_start}" | sed "s/(.) /\\1/g"
+    line_start=$((space_pos+1))
+   else
+    echo "${arr[@]:line_start:curr-line_start-1}" | sed "s/(.) /\\1/g"
+    line_start=$((curr-1))
+   fi
+  done
+ done
+}
+
+tablewrap(){
+ # Mix of "column" and "fold": two-column table whose right side is properly aligned and also line wraps on spaces instead of in the middle of a word. Also works around escape character issues of coreutils ("fold", "wc" etc.).
+ # Prints further lines with indent 2 if the text can't fit in proper tabulated form.
+ 
+ # find longest left side
+ for((i=1; i<$#; i+=2)); do
+  curr=$(len "${!i}")
+  ((l_len=curr>l_len?curr:l_len))
+ done
+ ((l_len+=2))
+ r_len=$(($(tput cols)-l_len))
+ # set alignment width
+ tabs $l_len
+ # enough space in terminal for right side?
+ if ((l_len<$(tput cols))); then
+  while(($#>0)); do
+   # print left side
+   echo -n "$1"
+   shift
+   # print right side, folded and aligned
+   wrap $r_len "$1" | sed "s/^/\\t/g"
+   shift
+  done
+ else
+  # fallback to indentation 2
+  while(($#>0)); do
+   wrap $(($(tput cols)-2)) "$1  $2" | sed "1 ! s/^/  /g"
+   shift 2
+  done
+ fi
+ # reset tabs
+ tabs -8
+}
+
+shrink(){
+ # This script forces a video below a certain size, with the best quality possible for that size. It also converts to MP4, because why not.
+ # Exit value is 3 on FFMPEG error, 2 if a so far unsupported file type was provided (currently only certain videos work), 1 if the file couldn't be made small enough, otherwise 0 indicates success and then the last line of output is the path/file that worked. To get the filename in a script without letting "tail" overwrite the exit value, use one of these:
+ # temp=$(shrink …); if(($?==0)); then echo $temp | tail -n 1; fi
+ # if temp=$(shrink …); then echo $temp | tail -n 1; fi
+ # Effective working directory will be the one with the input file in it.
+ 
+ ### INITIALISATION AND VALIDATION
+ ## interactive or command line parameters
+ if [[ -r "$1" && ( "$2" == "d" || "$2" == "t" || "$2" == "g" || "$2" == "b" || "$2" =~ ^[0-9]+$ )]]; then
+  # input file path/name
+  in="$1"
+  # maximum file size allowed, examples:
+  if [[ "$2" == "d" ]]; then
+  # Discord: 10MiB=25*1024² Bytes
+   limit=10485760
+  elif [[ "$2" == "t" ]]; then
+  # Telegram: 2000 MiB=2000*1024² Bytes
+   limit=2097152000
+  elif [[ "$2" == "g" ]]; then
+  # GermanZero Sharepoint: 2 SI GB=2*1000³ Bytes
+   limit=2000000000
+  elif [[ "$2" == "b" ]]; then
+  # 32bit systems: <2GiB→2*1024³-1 Bytes
+   limit=2147483647
+  else
+   limit=$2
+  fi
+ else
+  echo -n "Input file: "
+  while true; do
+   read in
+   if [[ -r "$1" ]]; then break; fi
+   echo "Invalid or unreadable, try again or abort with Ctrl+Esc."
+  done
+  echo -n "File size limit in bytes: "
+  while true; do
+   read limit
+   if [[ "$2" =~ ^[0-9]+$ ]]; then break; fi
+   echo "Not an integer, try again or abort with Ctrl+Esc."
+  done
+ fi
+ # If this is set to "true", the files that resulted from all the attempts except for the best one are deleted. If set to "false", they are kept. This does not guarantee that any specific file will exist (but it is predictable, for example if CRF 18 is the best, then the files with CRF 51, 25, 12, 18, 15, 16 and 17 will exist).
+ if [[ "$3" == "false" ]]; then
+  delete_intermediate_results=false
+ else
+  # default is true
+  delete_intermediate_results=true
+ fi
+ 
+ # start values, crf=51 is worst possible
+ good=0
+ bad=51
+ curr=51
+ 
+ # filename without extension
+ name="${in%.*}"
+ # file extension
+ ext="${in#*.}"
+ 
+ # reason: CRF 0..51 range apparently only apples to h264
+ if ! ffprobe "$in" 2>&1 | grep -q h264; then
+  echo "Not a supported file! Currently only h264 (usually .mp4) video is supported. ffprobe output:"
+  ffprobe "$in"
+  exit 2
+ fi
+ 
+ output(){
+  echo "This file succeeded ($(stat --printf="%s" "$out")<$limit):"
+  echo "$out"
+  exit
+ }
+ 
+ in_size=$(stat --printf="%s" "$in")
+ if((in_size<limit)); then
+  echo "Input is already below limit!"
+  out="$in"
+  output
+ fi
+ 
+ ### MAIN PART
+ 
+ echo "Input file size: $in_size"
+ 
+ while true; do
+  out="$name""_$curr.$ext"
+  echo -n "$(date +"%H:%M:%S") testing crf=$curr, filename: $name""_$curr.$ext"
+ #############################################################
+ # This is where the script will spend 99% of its time!      #
+  ffmpeg -nostdin -i "$in" -crf $curr -c:s copy -v 16 "$out" #
+ #############################################################
+  if(($?!=0)); then
+   echo "\nFFMPEG error!"
+   exit 3
+  fi
+  size=$(stat --printf="%s" "$out")
+  echo -n ", resulting size: $size"
+  if((size>limit)); then
+   if((curr==51)); then
+    echo ">$limit, even with CRF=51"
+    if [[ $delete_intermediate_results == true ]]; then rm "$out"; fi
+    exit 1
+   fi
+   echo ">$limit"
+    # If the current result is above the limit, it gets deleted. Since some valid result should already exist with CRF=51 or whatever else happened later (except if the script fails completely), there will always be a file left.
+   if [[ $delete_intermediate_results == true ]]; then rm "$name""_$curr.$ext"; fi
+   good=$curr
+  else
+   echo "≤$limit"
+    # If the current result is below the limit, then the previous worse/smaller result is no longer needed.
+   if [[ $delete_intermediate_results == true && $curr != 51 ]]; then rm "$name""_$bad.$ext"; fi
+   bad=$curr
+  fi
+ 
+  # Stop searching if narrowed down to exact number, pick best value that is "worse" than the limit, which luckily already is the current value of $bad.
+  # CRF 0 will never be picked. Normally it shouldn't make the file smaller anyway and it leads to issues in some programs.
+  if((bad-good<2)); then
+   out="$name""_$bad.$ext"
+   output
+  fi
+  curr=$(((good+bad)/2))
+ done
+}

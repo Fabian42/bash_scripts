@@ -17,6 +17,3 @@
 --exec "echo \"%(epoch>%H:%M:%S)s %(filepath)s\""
 # be nice to the server
 --retry-sleep exp=5:16:2 --sleep-requests 10 --sleep-interval 10 --sleep-subtitles 10 --limit-rate 500K --min-sleep-interval 10 --max-sleep-interval 20
-
-# temp while using snapshot executable
--f "bv*[height<=?1440]+(ba[format_note*=original]/ba[format_note*=Default]/ba/ba*)/b[height<=?1440]/22/18" --sub-lang "en-GB,en,en-US,de-DE,de,ja-JP,ja,ja-orig" --embed-subs

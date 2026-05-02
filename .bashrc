@@ -116,7 +116,6 @@ kdesrc-run ()
 ## improvements
 # echo without newline
 alias ech="echo -n"
-alias e="echo -n"
 # don't append useless newline, show line numbers
 alias nano="nano -Ll"
 # always list all files that actually exist, in better order
@@ -177,15 +176,14 @@ scr(){
   echo "File already exists!"
   perm "$1.sh"
   if [[ ! "$(cat "$1.sh" | head -n 1)" =~ ^\#!" "*\/bin\/bash$ ]]; then
-   echo "Adding #!/bin/bash and source /home/fabian/d/programs/bash_scripts/sane"
+   echo "Adding #! and sane"
    (echo "#!/bin/bash\nsource /home/fabian/d/programs/bash_scripts/sane"; cat "$1.sh") | sponge "$1.sh"
   fi
   sleep 1
  else
   touch "$1.sh"
-  sudo chmod -R 777 "$1.sh"
-  echo "#!/bin/bash\nsource /home/fabian/d/programs/bash_scripts/sane" > "$1.sh"
   perm "$1.sh"
+  echo "#!/bin/bash\nsource /home/fabian/d/programs/bash_scripts/sane" > "$1.sh"
  fi
  nano -lL +3 "$1.sh"
 }
@@ -234,6 +232,8 @@ alias loop="pactl unload-module module-loopback"
 alias alignleft="xdotool sleep 0.1 key Super+Left sleep 1 mousemove 1280 720 sleep 0.1 mousedown 1 sleep 0.1 mousemove 2176 720 sleep 1 mouseup 1"
 # un-freeze second monitor
 alias fixscreen="xrandr --output HDMI-1-0 --mode 2560x1440 --refresh 60; xrandr --output HDMI-1-0 --mode 2560x1440 --refresh 144"
+# restart clipboard script
+alias clip="killall clipboard_modify.sh; ($drive/programs/bash_scripts/clipboard_modify.sh & disown); exit"
 
 ## console
 # forget commands starting with a space
@@ -285,7 +285,7 @@ up(){ if [ "$1" == "" ]; then cd ..; else for((a=0;a<$1;a++)) do cd ..; done; fi
 # go to the previous directory
 back(){ cd "$OLDPWD"; path; ls;}
 # give all permissions to everyone for a file/folder, including subfolders
-perm(){ sudo chown -Rc --preserve-root "$(whoami)" "$1"; sudo chmod -R 777 "$1"; sudo chattr -Rai "$1";}
+perm(){ sudo chown -Rc --preserve-root "$(whoami)" "$1"; sudo chmod -Rc 777 "$1"; sudo chattr -Rai "$1";}
 # quick switching to "Downloads", "music", etc.
 export CDPATH=".:/home/fabian:$drive"
 
@@ -454,7 +454,7 @@ div_time4(){
  hour_in="$(echo "$rest" | sed "s/\\:?[0-9]+$//")"
  hour="$((hour_in/4))"
  min="$((min_in/4+(hour_in%4*15)))"
- sec="$(qalc -t "$sec_in/4+(0$min_in%4*15)")"
+ sec="$((sec_in/4+(min_in%4*15)))"
  echo "$hour:$min:$sec" # everything works out to be "0:0:x" if input is shorter format
 }
 # speed up video 4×
@@ -512,8 +512,8 @@ zp(){
  for file in "${files[@]}"; do
   ((size+=$(du -PsB1 "$file" | sed "s/[ \\t].+//")))
  done
- # conditional parameters: split archive into Telegram-compatible files if necessary, delete original files if it's a DVD backup and packing succeeded
- 7z a -mx0 $(if (( size > limit )); then echo "-v""$limit""b"; fi) $(if [[ "$(readlink -f .)" == "/home/fabian/Desktop/DVD" ]]; then echo "-sdel"; fi) "$out_name".zip "${files[@]}"
+ # conditional parameters: split archive into Telegram-compatible files if necessary
+ 7z a -mx0 $(if (( size > limit )); then echo "-v""$limit""b"; fi) "$out_name".zip "${files[@]}"
 }
 # Make a huge image out of text, to see all the details. First argument is text, second can be "order" for the "Kanji stroke orders" font
 render_kanji(){ if [[ "$2" == "order" ]]; then font="/usr/share/fonts/TTF/KanjiStrokeOrders_v4.004.ttf"; else font="/usr/share/fonts/TTF/Cica-Regular.ttf"; fi; convert -monitor -define registry:temporary-path=/home/fabian/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "$font" label:"$1" render_kanji.png;}
@@ -556,9 +556,9 @@ alias mn="xdotool getactivewindow windowminimize; sleep 1; xdotool key Escape"
 # filter latest Minecraft log
 log2(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -i "$1";}
 # same, but only relevant chat messages
-log(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | grep -i "$1" | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] <([^>]+)>/\\1 \\3:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
+log(){ cat /home/fabian/d/minecraft/logs/latest.log | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " -e "\\[automatically reconnected\\]" | grep -i "$1" | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]( [0-9\\:\\.]+)? <([^>]+)>/\\1 \\4:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$" | grep -i "$1";}
 # annual compression:
-# nl; for file in 2024*; do date="$(echo "$file" | grep -o "^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]")"; for line in $(cat $file | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] <([^>]+)>/\\1 \\3:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$"); do echo "$date $line"; done; done > chat2024.txt
+# nl; for file in 2026*; do date="$(echo "$file" | grep -o "^[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]")"; for line in $(cat $file | grep -E "^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread|Client thread)\\/INFO\\]\\: \\[CHAT\\] " | grep -v -e "o/" -e "tartare" -e "hello" -e "\\bhi\\b" -e "☻/" -e "\\\\o" -e "heyo" -e "i'm off" -e "gtg" -e "bye" -e "cya" -e "Good morning! If you'd like to be awake through the coming night, click here." -e "left the game" -e "joined the game" -e "just got in bed." -e "Unknown or incomplete command\\, see below for error" -e "\\/<\\-\\-\\[HERE\\]" -e "\\[Debug\\]: " -e "がゲームに参加しました" -e "がゲームを退出しました" -e "［デバッグ］： " -e "スクリーンショットを" -e "Now leaving " -e "Now entering " -e "\\[automatically reconnected\\]" | sed "s/^\\[([0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9])\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\]( [0-9\\:\\.]+)? <([^>]+)>/\\1 \\4:/;s/^\\[[0-9][0-9]\\:[0-9][0-9]\\:[0-9][0-9]\\] \\[(main|Render thread)\\/INFO\\]\\: \\[CHAT\\] //" | grep -vE "^[0-9\\:]+ <[A-Za-z0-9\\_\\-]+> (io|oi|hey|wb)$"); do echo "$date $line"; done; done > chat2026.txt
 # use all items on a full hotbar, optional argument of clicks per slot
 hotbar(){ max=70; if [[ "$1" =~ ^[0-9]+$ ]]; then max=$1; fi; for slot in {1..9}; do i=0; while ((i++<max)); do xdotool click --delay 50 1; done; xdotool click 5; done;}
 # craft the rightmost 7×3 inventory slots of bones into bone blocks, assuming no other available recipes
@@ -696,13 +696,13 @@ about(){
 un(){ sudo pacman -Rn $(pack_by_command $*);}
 # move Discord config files to new location after package upgrade, because updater is disabled via mod, because it often refuses to start otherwise
 #fixdiscord(){ cd /home/fabian/.config/discord; version="$(ls -1 | grep "^0\\.0\\.")"; mv "$version" "0.0.$(($(echo "$version" | sed "s/0\\.0\\.//")+1))"; un openasar-git; yay -S discord; yay -S openasar-git;}
+# package history
+pachist_helper(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
+pachist(){ if [[ "$1" == "" ]]; then pachist_helper | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper | grep "$1" | tail -n 100 | grep "$1"; fi;}
 
 ## misc
 # Prints the current time. Useful for scripts.
 alias now="date \"+%H:%M:%S\""
-# package history
-pachist_helper(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
-pachist(){ if [[ "$1" == "" ]]; then pachist_helper | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper | grep "$1" | tail -n 100 | grep "$1"; fi;}
 # maximum temperature of any component
 sen(){ sensors coretemp-isa-0000 iwlwifi_1-virtual-0 nvme-pci-6c00 acpitz-acpi-0 | grep -oE "  \\+[0-9\\.]+" | grep -oE "[0-9\\.]+" | sed "s/\\.[0-9]//" | sort -n | tail -1;}
 # watch maximum temperature
