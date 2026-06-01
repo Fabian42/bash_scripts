@@ -16,6 +16,8 @@ while ! wmctrl -l | grep "Autostart$"; do :; done # wait until prompt is open
 xdotool key Super+KP_5 key Num_Lock # move window to center, also enable NumLock again, because KP_5 disables it
 wait $! # wait for timeout or choice
 if (( $? == 1 )); then exit; fi # right button and Enter is 0, left button and Escape is 1, timeout is 5
+echo "focus"
+xdotool key Ctrl+Super+m # disable focus strip
 
 echo "functions"
 waitstart(){
@@ -74,8 +76,6 @@ echo "screenkey"
 screenkey & disown # key display
 echo "KDE Connect"
 kdeconnectd & disown
-echo "focus"
-xdotool key Ctrl+Super+m # disable focus strip
 
 # task manager
 echo "task manager"
@@ -90,8 +90,8 @@ xdotool sleep 1 mousemove 2479 209 sleep 0.1 click 1 sleep 0.1 key Tab sleep 0.1
 
 # start Firefox and set up tiling size, (don't minimise yet, to open history later)
 echo "Firefox"
-firefox & disown
-waitstart "Mozilla Firefox"
+firefox-developer-edition & disown
+waitstart "Firefox Developer Edition"
 sleep 1
 checkkde
 maximise

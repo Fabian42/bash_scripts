@@ -236,8 +236,6 @@ alias fixscreen="xrandr --output HDMI-1-0 --mode 2560x1440 --refresh 60; xrandr 
 alias clip="killall clipboard_modify.sh; ($drive/programs/bash_scripts/clipboard_modify.sh & disown); exit"
 
 ## console
-# forget commands starting with a space
-HISTCONTROL=ignorespace
 # show time in history
 HISTTIMEFORMAT="%Y-%m-%d %H:%M:%S "
 # directory name autocorrect
@@ -245,6 +243,7 @@ shopt -s cdspell
 # switching to directories without "cd"
 shopt -s autocd
 # ignore consecutive duplicate commands, anything that starts with a space and some specific commands in history and up-arrow list
+HISTCONTROL=ignorespace
 HISTIGNORE="&: :q:q *:h:hi:aka:kde:win:pulse:blu:shutdown:pachist"
 # quit
 alias q="exit"
@@ -534,7 +533,7 @@ delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
 p(){
  if [[ "$1" == "" ]]; then
-  files="$(find "$drive/music/a1/" "$drive/music/a2/" "$drive/music/a3/" "$drive/music/a4/" "$drive/temp_music/a0_keep/" -type f | sort -u)"
+  files="$(find "$drive/music/a1/" "$drive/music/a2/" "$drive/music/a3/" "$drive/music/a4/" "$drive/temp_music/a0_keep/a1" "$drive/temp_music/a0_keep/a2" "$drive/temp_music/a0_keep/a3" "$drive/temp_music/a0_keep/a4" "$drive/temp_music/a0_keep/a9_sort_quality" -type f | sort -u)"
  else
   files="$(find "$drive/music/a0/" "$drive/music/a1/" "$drive/music/a2/" "$drive/music/a3/" "$drive/music/a4/" "$drive/temp_music/a0_keep" -iname "*$1*" -type f | sort -u)"
  fi
@@ -731,6 +730,7 @@ waitfor(){
 # show top GPU usage processes
 alias gtop="nvidia-smi"
 # generate a random pronouncable name
+alias e="echo -n"
 random_name(){
  if [[ "$1" =~ ^[0-9]+$ ]]; then syllables=$1; else syllables=3; fi
  while ((syllables--)); do
@@ -741,6 +741,7 @@ random_name(){
  done
  echo
 }
+unalias e
 # Move everything from Swap to RAM. Warning: If >64GB are in RAM+Swap, undefined behaviour might happen, including system crash!
 alias unswap="sudo swapoff -a; sudo swapon -a"
 

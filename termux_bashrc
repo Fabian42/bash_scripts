@@ -19,7 +19,7 @@ HISTFILESIZE=
 export EDITOR="/data/data/com.termux/files/usr/bin/nano"
 export VISUAL="/data/data/com.termux/files/usr/bin/nano"
 # easier to remember command for editing this file, also apply changes from file
-alias aka="nano -Ll +26 ~/.bashrc; source ~/.bashrc"
+alias aka="nano -Ll ~/.bashrc; source ~/.bashrc"
 # just refresh
 alias ak="source ~/.bashrc"
 
@@ -329,7 +329,8 @@ sl(){ $(yt-dlp -f "best.2/best" -g "$(if [[ "$1" == "" ]]; then echo "https://ww
 # print public IP addresses
 alias myip="wget -T5 -q -O - \"v4.kescher.at\" \"v6.kescher.at\""
 # temporary download command until dl is done
-d(){ yt-dlp -f "bv*[height<=?1080]+(ba[format_note*=original]/ba[format_note*=Default]/ba/ba*)/b[height<=?1080]/22/18" -q -R 10 --fragment-retries 10 --file-access-retries 10 --extractor-retries 10 --socket-timeout 600 --default-search auto --check-formats --extractor-args "youtube:player-client=default,-tv,web_safari,web_embedded" --no-warnings -o "%(playlist_index|0001)04i_%(uploader).31s_-_%(title).63s_%(id)s.%(ext)s" --restrict-filenames --no-part --compat-options playlist-index --sponsorblock-remove "sponsor,selfpromo,interaction,preview,music_offtopic" --plugin-dirs "~" --use-postprocessor "DeArrow:when=pre_process" --retry-sleep exp=5:16:2 --sleep-requests 10 --sleep-interval 10 --sleep-subtitles 10 --limit-rate 500K --min-sleep-interval 10 --max-sleep-interval 20 --recode-video mp4 $@; mv *.mp4 *.mkv *.webm ~/storage/downloads;}
+d(){ yt-dlp -f "bv*[height<=?1080]+(ba[format_note*=original]/ba[format_note*=Default]/ba/ba*)/b[height<=?1080]/22/18" --recode-video mp4 $@; mv *.mp4 *.mkv *.webm ~/storage/downloads;}
+dlm(){ yt-dlp -f "ba*[format_note*=original]/ba*[format_note*=Default]/ba*/b" $@; mp3 *.mp4 *.mkv *.webm; mv *.mp3 ~/storage/downloads;}
 yt_description(){ id="$(echo "$1" | sed "s/\\.[a-z0-9]{3,4}\$//" | grep -o ".{11}\$")"; yt-dlp --write-description --skip-download --no-exec "https://www.youtube.com/watch?v=""$id"; cat *"$id"".description"; rm *"$id"".description"; }
 
 ## misc
