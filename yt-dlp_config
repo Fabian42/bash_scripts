@@ -13,7 +13,7 @@
 # chapters
 --embed-chapters
 # delete progress bar after download has finished, using black magic
-#--exec "echo \"\033[A\033[2K%(epoch>%H:%M:%S)s %(filepath)s\""
---exec "echo \"%(epoch>%H:%M:%S)s %(filepath)s\""
+#--exec "echo \"\033[A\033[2K%(epoch>%H:%M:%S)q %(filepath)q\""
+--exec "echo \"%(epoch>%H:%M:%S)q %(filepath)q\""
 # be nice to the server
 --retry-sleep exp=5:16:2 --sleep-requests 10 --sleep-interval 10 --sleep-subtitles 10 --limit-rate 500K --min-sleep-interval 10 --max-sleep-interval 20

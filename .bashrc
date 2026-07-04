@@ -153,7 +153,7 @@ magic(){
  search "\\.pacsave"
 }
 # only the cleaning part of the above
-alias space="echo \"y\nn\ny\n\" | yay -Scc"
+alias space="sudo rm -r /var/cache/pacman/pkg/download-*; echo \"y\nn\ny\n\" | yay -Scc"
 # fix iMage "unable to write pixel cache" on large images
 export TMPDIR="/var/tmp"
 # restart KDE and KDE connect
@@ -519,15 +519,29 @@ render_kanji(){ if [[ "$2" == "order" ]]; then font="/usr/share/fonts/TTF/KanjiS
 # concatenate videos with identical encoding settings, last argument is output
 concat(){ out="${@:$#:$#}"; files="/tmp/$(date "+%Y-%m-%dT%H:%M:%S")"; touch "$files"; for file in ${@:1:$#-1}; do echo "file '$(readlink -f "$file")'" >> "$files"; done; ffmpeg -f concat -safe 0 -i "$files" -c copy "$out"; rm "$files";}
 # phone alarm replacement
-alarm(){ sleep "$1"; cd /home/fabian/d/music; xdotool key Ctrl+Alt+Shift+i; sleep 60; fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat --extraintf=rc --rc-host 192.168.2.55:9999 animusic/a_retro.mp3 animadrop/ad_escapism.mp3 animadrop/ad_mach.mp3 animadrop/ad_thursday.mp3 audiomachine/am_penumbra.mp3 acuticnotes/an_antares.mp3 acuticnotes/an_dark.mp3 acuticnotes/an_way.mp3 arkana/arkana_chronosphere.mp3 arkana/arkana_iskatallith.mp3 arkana/arkana_nihilum.mp3 arkana/arkana_sof.mp3 arkana/arkana_vector.mp3 arkasia/arkasia_analogic.mp3 arkasia/arkasia_born.mp3 arkasia/arkasia_bullet.mp3 arkasia/arkasia_cloud.mp3 arkasia/arkasia_clouds.mp3 arkasia/arkasia_ethereality.mp3 arkasia/arkasia_extinction.mp3 arkasia/arkasia_fight.mp3 arkasia/arkasia_haruspex.mp3 arkasia/arkasia_heads.mp3 arkasia/arkasia_intravenous.mp3 arkasia/arkasia_kraken.mp3 arkasia/arkasia_open.mp3 arkasia/arkasia_out_of_reach.mp3 arkasia/arkasia_phantasia.mp3 arkasia/arkasia_phoenix_1.mp3 arkasia/arkasia_polymorph.mp3 arkasia/arkasia_revelation.mp3 arkasia/arkasia_shatter.mp3 arkasia/arkasia_shieldren.mp3 arkasia/arkasia_space.mp3 arkasia/arkasia_time.mp3 arkasia/arkasia_without.mp3 au5/au5_sweet.mp3 big_giant_circles/bgc_cumulo_nimblers.mp3 big_giant_circles/bgc_legacy.mp3 big_giant_circles/bgc_muppet.mp3 big_giant_circles/bgc_sevcon.mp3 big_giant_circles/bgc_throwing.mp3 big_giant_circles/bgc_yeah.mp3 ben_moon/bm_empire.mp3 ben_moon/bm_turning_point.mp3 blue_stahli/bs_metamorphosis.mp3 blue_stahli/bs_over.mp3 caspro/caspro_halloween.mp3 caspro/caspro_reset.mp3 carpenter_brut/cb_hang.mp3 carpenter_brut/cb_le.mp3 carpenter_brut/cb_mine.mp3 carpenter_brut/cb_paradise.mp3 chris_haigh/ch_vindicator.mp3 crinkles/crinkles_fervor.mp3 doctor_who/dw_doctor_5.mp3 doctor_who/dw_grave.mp3 dance_with_the_dead/dwtd_andromeda.mp3 dance_with_the_dead/dwtd_diabolic.mp3 dance_with_the_dead/dwtd_dream.mp3 dance_with_the_dead/dwtd_madness.mp3 dance_with_the_dead/dwtd_riot.mp3 dance_with_the_dead/dwtd_screams_whispers.mp3 dance_with_the_dead/dwtd_snap.mp3 dance_with_the_dead/dwtd_war.mp3 dance_with_the_dead/dwtd_watching.mp3 eric_skiff/es_find.mp3 feint/feint_clockwork.mp3 feint/feint_eyes.mp3 feint/feint_formless.mp3 faux_tales/ft_shadows.mp3 geometry/gd_base.mp3 geometry/gd_geometrical.mp3 hans_zimmer/hz_dream.mp3 lukhash/lh_giana.mp3 lukhash/lh_highland.mp3 lukhash/lh_museum.mp3 lukhash/lh_requiem.mp3 linkin_park/lp_session.mp3 lena_raine/lr_summit.mp3 electronic/mux_mool_get_better_john.mp3 punch_deck/pd_more.mp3 plini/plini_cascade.mp3 plini/plini_cloudburst.mp3 nintendo/pokemon_cynthia.mp3 pacific_rim/pr_pacific_rim.mp3 really_slow_motion/rsm_era.mp3 really_slow_motion/rsm_fruit.mp3 really_slow_motion/rsm_mechanical.mp3 sizzlebird/sb_clarus.mp3 sizzlebird/sb_nebula.mp3 sizzlebird/sb_origins.mp3 sizzlebird/sb_sol.mp3 sizzlebird/sb_swing.mp3 nintendo/smg_buoy.mp3 nintendo/smg_credits_2.mp3 nintendo/smg_fleet.mp3 nintendo/smg_generator.mp3 nintendo/smg_melt.mp3 nintendo/smg_station.mp3 sentient_pulse/sp_climb.mp3 sentient_pulse/sp_echoes.mp3 star_trek/st_enterprise.mp3 two_steps_from_hell/tb_highway.mp3 toby_fox/tf_asgore.mp3 toby_fox/tf_dummy.mp3 toby_fox/tf_field.mp3 toby_fox/tf_give.mp3 toby_fox/tf_hero.mp3 toby_fox/tf_hopes.mp3 tiasu/tiasu_fault.mp3 tiasu/tiasu_phantom.mp3 tiasu/tiasu_pulse.mp3 venator/venator_elapse.mp3 xi/xi_anima.mp3 xi/xi_freedom.mp3 xi/xi_galaxies.mp3 xi/xi_heaven.mp3 xi/xi_siva.mp3 xi/xi_tiferet.mp3 xi/xi_transmission.mp3 xi/xi_world_fragments_1.mp3 xi/xi_world_fragments_2.mp3 zircon/zircon_baroque.mp3 zircon/zircon_necromancy.mp3 zircon/zircon_prism.mp3 &> /dev/null & disown; sleep 1; { vol=0; while ((vol<512)); do echo "volume ""$((vol+=4))"; sleep 1; done } | telnet 192.168.2.55 9999; }
+alarm(){
+ sleep "$((60*$1))" # alarm set in $1 minutes
+ cd /home/fabian/d/music
+ xdotool key Ctrl+Alt+Shift+i # Pause music AKA first VLC that was opened (or the first opened after that one was closed, etc.). If something else is running, bad luck, it will interfere.
+ sleep 60 # some silence, maybe it helps brain stop tuning out background sounds
+ fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat --extraintf=rc --rc-host 192.168.2.55:9999 animusic/a_retro.mp3 animadrop/ad_escapism.mp3 animadrop/ad_mach.mp3 animadrop/ad_thursday.mp3 audiomachine/am_penumbra.mp3 acuticnotes/an_antares.mp3 acuticnotes/an_dark.mp3 acuticnotes/an_way.mp3 arkana/arkana_chronosphere.mp3 arkana/arkana_iskatallith.mp3 arkana/arkana_nihilum.mp3 arkana/arkana_sof.mp3 arkana/arkana_vector.mp3 arkasia/arkasia_analogic.mp3 arkasia/arkasia_born.mp3 arkasia/arkasia_bullet.mp3 arkasia/arkasia_cloud.mp3 arkasia/arkasia_clouds.mp3 arkasia/arkasia_ethereality.mp3 arkasia/arkasia_extinction.mp3 arkasia/arkasia_fight.mp3 arkasia/arkasia_haruspex.mp3 arkasia/arkasia_heads.mp3 arkasia/arkasia_intravenous.mp3 arkasia/arkasia_kraken.mp3 arkasia/arkasia_open.mp3 arkasia/arkasia_out_of_reach.mp3 arkasia/arkasia_phantasia.mp3 arkasia/arkasia_phoenix_1.mp3 arkasia/arkasia_polymorph.mp3 arkasia/arkasia_revelation.mp3 arkasia/arkasia_shatter.mp3 arkasia/arkasia_shieldren.mp3 arkasia/arkasia_space.mp3 arkasia/arkasia_time.mp3 arkasia/arkasia_without.mp3 au5/au5_sweet.mp3 big_giant_circles/bgc_cumulo_nimblers.mp3 big_giant_circles/bgc_legacy.mp3 big_giant_circles/bgc_muppet.mp3 big_giant_circles/bgc_sevcon.mp3 big_giant_circles/bgc_throwing.mp3 big_giant_circles/bgc_yeah.mp3 ben_moon/bm_empire.mp3 ben_moon/bm_turning_point.mp3 blue_stahli/bs_metamorphosis.mp3 blue_stahli/bs_over.mp3 caspro/caspro_halloween.mp3 caspro/caspro_reset.mp3 carpenter_brut/cb_hang.mp3 carpenter_brut/cb_le.mp3 carpenter_brut/cb_mine.mp3 carpenter_brut/cb_paradise.mp3 chris_haigh/ch_vindicator.mp3 crinkles/crinkles_fervor.mp3 doctor_who/dw_doctor_5.mp3 doctor_who/dw_grave.mp3 dance_with_the_dead/dwtd_andromeda.mp3 dance_with_the_dead/dwtd_diabolic.mp3 dance_with_the_dead/dwtd_dream.mp3 dance_with_the_dead/dwtd_madness.mp3 dance_with_the_dead/dwtd_riot.mp3 dance_with_the_dead/dwtd_screams_whispers.mp3 dance_with_the_dead/dwtd_snap.mp3 dance_with_the_dead/dwtd_war.mp3 dance_with_the_dead/dwtd_watching.mp3 eric_skiff/es_find.mp3 feint/feint_clockwork.mp3 feint/feint_eyes.mp3 feint/feint_formless.mp3 faux_tales/ft_shadows.mp3 geometry/gd_base.mp3 geometry/gd_geometrical.mp3 hans_zimmer/hz_dream.mp3 lukhash/lh_giana.mp3 lukhash/lh_highland.mp3 lukhash/lh_museum.mp3 lukhash/lh_requiem.mp3 linkin_park/lp_session.mp3 lena_raine/lr_summit.mp3 electronic/mux_mool_get_better_john.mp3 punch_deck/pd_more.mp3 plini/plini_cascade.mp3 plini/plini_cloudburst.mp3 nintendo/pokemon_cynthia.mp3 pacific_rim/pr_pacific_rim.mp3 really_slow_motion/rsm_era.mp3 really_slow_motion/rsm_fruit.mp3 really_slow_motion/rsm_mechanical.mp3 sizzlebird/sb_clarus.mp3 sizzlebird/sb_nebula.mp3 sizzlebird/sb_origins.mp3 sizzlebird/sb_sol.mp3 sizzlebird/sb_swing.mp3 nintendo/smg_buoy.mp3 nintendo/smg_credits_2.mp3 nintendo/smg_fleet.mp3 nintendo/smg_generator.mp3 nintendo/smg_melt.mp3 nintendo/smg_station.mp3 sentient_pulse/sp_climb.mp3 sentient_pulse/sp_echoes.mp3 star_trek/st_enterprise.mp3 two_steps_from_hell/tb_highway.mp3 toby_fox/tf_asgore.mp3 toby_fox/tf_dummy.mp3 toby_fox/tf_field.mp3 toby_fox/tf_give.mp3 toby_fox/tf_hero.mp3 toby_fox/tf_hopes.mp3 tiasu/tiasu_fault.mp3 tiasu/tiasu_phantom.mp3 tiasu/tiasu_pulse.mp3 venator/venator_elapse.mp3 xi/xi_anima.mp3 xi/xi_freedom.mp3 xi/xi_galaxies.mp3 xi/xi_heaven.mp3 xi/xi_siva.mp3 xi/xi_tiferet.mp3 xi/xi_transmission.mp3 xi/xi_world_fragments_1.mp3 xi/xi_world_fragments_2.mp3 zircon/zircon_baroque.mp3 zircon/zircon_necromancy.mp3 zircon/zircon_prism.mp3 &> /dev/null & disown # randomise alarm-worthy music, currently hardcoded, also bind to remove control on arbitrary port 9999
+ sleep 2 # wait for VLC to start
+ {
+  vol=0
+  while ((vol<512)); do
+   echo "volume ""$((vol+=4))"
+   sleep 1
+  done
+ } | telnet 192.168.2.55 9999 # send volume change commands to VLC remove control
+}
 
 ## searches
 # search files everywhere, ignoring case, partial file name, avoid most of the usual "permission denied" error messages and hide the rest
-search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i "$1";}
+search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i -- "$1";}
 # same as above, but only in the current folder and subfolders and not as root and not hiding errors
-here(){ if [[ "$1" == "" ]]; then find . | sort; else find . -regextype grep -iwholename "*$1*" | sort | grep -i "$1"; fi; }
+here(){ if [[ "$1" == "" ]]; then find . | sort; else find . -regextype grep -iwholename "*$1*" | sort | grep -i -- "$1"; fi; }
 # same as above, but as root
-shere(){ sudo find . -iwholename "*$1*" | grep -i "$1";}
+shere(){ sudo find . -iwholename "*$1*" | grep -i -- "$1";}
 # trash all files for search term
 delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
@@ -633,9 +647,9 @@ m(){ (
 #  cp /home/fabian/d/minecraft/options_max.txt /home/fabian/d/minecraft/options.txt
   if [[ "$1" == "1" ]]; then
    shift
-   prime-run prismlauncher -l SL1 -s "mc.slicedlime.tv" -a FaRo1 $@
+   prismlauncher -l SL1 -s "mc.slicedlime.tv" -a FaRo1 $@
   else
-   prime-run prismlauncher -l SL2 -s "mc.slicedlime.tv" -a FaRo3 $@
+   prismlauncher -l SL2 -s "mc.slicedlime.tv" -a FaRo3 $@
   fi
  ) & xdotool key q sleep 0.1 key return
 }
@@ -698,6 +712,8 @@ un(){ sudo pacman -Rn $(pack_by_command $*);}
 # package history
 pachist_helper(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
 pachist(){ if [[ "$1" == "" ]]; then pachist_helper | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper | grep "$1" | tail -n 100 | grep "$1"; fi;}
+# list not installed optional dependencies
+listopt(){ for pack in $(pacman -Q | sed "s/ .+//"); do out=$(pacman -Qi "$pack" | sed -n -e "/optional dep/I,/required by/Ip" | head -n -1 | grep -v " \\[installed\\]" | sed "s/^optional dep[a-z]+ +\\://I" | sed "s/^ +//"); if [[ "$out" != "" && "$out" != "None" ]]; then echo "\n$pack:\n$out"; fi; done;}
 
 ## misc
 # Prints the current time. Useful for scripts.

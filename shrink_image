@@ -1,0 +1,39 @@
+#!/bin/bash
+source /home/fabian/d/programs/bash_scripts/sane
+if [[ -r "$1" && $(parse_suffix "$2") != "" ]]; then
+ file="$1"
+ limit=$(parse_suffix "$2")
+else
+ while true; do
+  echo -n "File: "
+  read file
+  if [[ -r "$file" ]]; then break; fi
+  echo "Invalid or unreadable, try again or abort with Ctrl+Esc."
+ done
+ while true; do
+  echo -n "Size limit (suffixes allowed): "
+  read limit
+  limit="$(parse_suffix "$limit")"
+  if [[ "$limit" != "" ]]; then break; fi
+  echo "Invalid size, try again or abort with Ctrl+Esc. Valid examples: 31415, 42M, 1 GiB, 2mb"
+ done
+fi
+size="$(identify "$file" | grep -o " [0-9]+x[0-9]+ " | sed "s/ //g")"
+x="${size%x*}"
+y="${size#*x}"
+name="${file%.*}"
+ext="${file#*.}"
+for f in {2..1000}; do
+ echo "factor: ""$f"
+ out="$name""_""$f"".""$ext"
+ magick "$file" -resize "$((x/f))x$((y/f))" "$out"
+ size="$(stat --printf="%s" -- "$out")"
+ echo "size: ""$size"
+ if (( $size <= $limit )); then
+  echo "Success: ""$out"
+  return
+ else
+  rm "$out"
+ fi
+done
+echo "Failed to shrink image below limit."

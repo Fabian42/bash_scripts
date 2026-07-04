@@ -9,6 +9,7 @@ xset s off
 caffeine & disown
 systemd-inhibit --what="sleep:idle:handle-suspend-key:handle-hibernate-key:handle-lid-switch" --who="manual" --why="stop annoying me" --mode=block sleep 2147483647 & disown
 
+xdotool key Ctrl+Super+m # disable focus strip
 # confirmation prompt
 echo "prompt"
 zenity --question --title "Autostart" --text "Complex autostart will start in 10 seconds, taking over mouse and keyboard.\nEnter/click right to continue immediately, Escape/click left to abort and not start anything." --ok-label "Continue immediately" --cancel-label "STOP" --width=621 --timeout=10 &
@@ -17,7 +18,6 @@ xdotool key Super+KP_5 key Num_Lock # move window to center, also enable NumLock
 wait $! # wait for timeout or choice
 if (( $? == 1 )); then exit; fi # right button and Enter is 0, left button and Escape is 1, timeout is 5
 echo "focus"
-xdotool key Ctrl+Super+m # disable focus strip
 
 echo "functions"
 waitstart(){
@@ -65,7 +65,7 @@ normal(){
 
 # background programs
 echo "clipboard_modify"
-$drive/programs/bash_scripts/clipboard_modify.sh & disown # remove parts of URLs from clipboard
+$drive""/programs/bash_scripts/clipboard_modify.sh & disown # remove parts of URLs from clipboard
 echo "copyq"
 copyq & disown # clipboard history
 echo "gazou"
@@ -91,7 +91,7 @@ xdotool sleep 1 mousemove 2479 209 sleep 0.1 click 1 sleep 0.1 key Tab sleep 0.1
 # start Firefox and set up tiling size, (don't minimise yet, to open history later)
 echo "Firefox"
 firefox-developer-edition & disown
-waitstart "Firefox Developer Edition"
+waitstart "Firefox"
 sleep 1
 checkkde
 maximise
@@ -104,14 +104,14 @@ normal "Notepad\\+\\+ \\[Administrator\\]"
 
 # Qalculate
 echo "Qalculate"
-$drive/programs/bash_scripts/fix_lang qalculate-qt & disown
+$drive""/programs/bash_scripts/fix_lang qalculate-qt & disown
 waitstart "Qalculate\!" # single or double backslash works, but not triple
 checkkde
 wmctrl -r :ACTIVE: -b add,above
 minimise
 
 echo "KeePass"
-keepass "$drive/data/misc/passwords.kdbx" -pw:"$(cat $drive/programs/bash_scripts/kp_pw.txt)" & disown
+keepass "$drive""/data/misc/passwords.kdbx" -pw:"$(cat $drive""/programs/bash_scripts/kp_pw.txt)" & disown
 normal "KeePass"
 
 echo "Krita"
@@ -191,20 +191,20 @@ xdotool search --onlyvisible --name "Firefox" windowactivate sleep 0.1 key Ctrl+
 normal "Library"
 
 # MC click script prep FaRo1: currently disabled, gold farm doesn't need inputs
-# konsole -e "bash --rcfile \"$drive/programs/bash_scripts/mc_prep_1.sh\""
+# konsole -e "bash --rcfile \"$drive""/programs/bash_scripts/mc_prep_1.sh\""
 
 # MC FaRo1
 echo "MC 1"
-del $drive/minecraft/replay_recordings/*.mcpr.del $drive/minecraft/replay_recordings/*.mcpr.tmp # delete broken ReplayMod recordings to prevent prompts
+del $drive""/minecraft/replay_recordings/*.mcpr.del $drive""/minecraft/replay_recordings/*.mcpr.tmp # delete broken ReplayMod recordings to prevent prompts
 time=$(date "+%s")
-prime-run prismlauncher -l SL1 -a FaRo1 & disown
+prismlauncher -l SL1 -a FaRo1 & disown
 i=0
-while (( $time > $(stat --printf "%W" "$drive/minecraft/logs/latest.log") )); do # wait for log to get reset (creation time > system time before starting MC), to avoid false positives in next wait command
+while (( $time > $(stat --printf "%W" "$drive""/minecraft/logs/latest.log") )); do # wait for log to get reset (creation time > system time before starting MC), to avoid false positives in next wait command
  sleep 1
  ((i++))
  if (( i > 60 )); then break; fi # timeout
 done
-if timeout 60 tail -f "$drive/minecraft/logs/latest.log" | grep -m 1; then "Creating pipeline for dimension minecraft\\:overworld" # wait for loading to almost finish
+if timeout 60 tail -f "$drive""/minecraft/logs/latest.log" | grep -m 1; then "Creating pipeline for dimension minecraft\\:overworld" # wait for loading to almost finish
  checkkde
  xdotool sleep 1 key Tab sleep 0.1 key Tab sleep 0.1 key Return sleep 0.1 key Super+t
  maximise; minimise
@@ -212,45 +212,45 @@ fi
 
 # MC click script prep FaRo3 (fishing) and start MC FaRo3
 echo "MC 3"
-konsole -e "bash --rcfile \"$drive/programs/bash_scripts/mc_prep_3.sh\"" & disown
+konsole -e "bash --rcfile \"$drive""/programs/bash_scripts/mc_prep_3.sh\"" & disown
 i=0
-while [ -f "$drive/minecraft/logs/latest.log" ] && (( $time > $(stat --printf "%W" "$drive/minecraft/logs/latest.log") )); do
+while [ -f "$drive""/minecraft/logs/latest.log" ] && (( $time > $(stat --printf "%W" "$drive""/minecraft/logs/latest.log") )); do
  sleep 1
  ((i++))
  if (( i > 60 )); then break; fi # timeout
 done
-timeout 60 tail -f "$drive/minecraft/logs/latest.log" | grep -m 1 "Creating pipeline for dimension minecraft\\:overworld"
+timeout 60 tail -f "$drive""/minecraft/logs/latest.log" | grep -m 1 "Creating pipeline for dimension minecraft\\:overworld"
 checkkde
 
 # VLC music
 echo "VLC+Dolphin"
-fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat $(find "$drive/music/a1" "$drive/music/a2" "$drive/music/a3" "$drive/music/a4" "$drive/temp_music/a0_keep" -type f | sort -u) & disown
+fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat $(find "$drive""/music/a1" "$drive""/music/a2" "$drive""/music/a3" "$drive""/music/a4" "$drive""/temp_music/a0_keep/a1" "$drive""/temp_music/a0_keep/a2" "$drive""/temp_music/a0_keep/a3" "$drive""/temp_music/a0_keep/a4" "$drive""/temp_music/a0_keep/a9_sort_quality" -type f | sort -u) & disown
 waitstart "VLC media player"; checkkde; maximise; left
 xdotool sleep 0.1 mousemove 1408 257 sleep 0.1 click 1 sleep 0.1 mousemove 351 879 sleep 0.1 click 1 sleep 0.1 key space sleep 0.1 keydown Down sleep 1 keyup Down sleep 0.1 key Up sleep 0.1 key Up sleep 0.1 key Up # correct keyboard focus, volume 60%
 minimise
 
 # VLC calm MC music
-fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat $(find "$drive/temp_music/mc" "$drive/temp_music/mc_calm" -type f | sort -u) & disown
+fix_lang prime-run vlc --play-and-exit -Z --loop --no-repeat $(find "$drive""/temp_music/mc" "$drive""/temp_music/mc_calm" -type f | sort -u) & disown
 waitstart "VLC media player" 2
 checkkde; maximise; left
 xdotool sleep 0.1 mousemove 1408 257 sleep 0.1 click 1 sleep 0.1 mousemove 351 879 sleep 0.1 click 1 sleep 0.1 key space
 minimise
 
 # Dolphin temp music
-\dolphin --new-window "$drive/temp_music" & disown
+\dolphin --new-window "$drive""/temp_music" & disown
 waitstart "Dolphin"; checkkde
 xdotool key "0"
 maximise; left; minimise
 
 # VLC temp music
-fix_lang prime-run vlc --play-and-exit --no-random --loop --no-repeat $(find "$drive/temp_music" -type f | grep -v -e "a0_keep" -e "a1_compare" -e "mc_calm" | sort -u) & disown
+fix_lang prime-run vlc --play-and-exit --no-random --loop --no-repeat $(find "$drive""/temp_music" -type f | grep -v -e "a0_keep" -e "a1_compare" -e "mc_calm" | sort -u) & disown
 waitstart "VLC media player" 3
 checkkde; maximise; left
 xdotool sleep 0.1 mousemove 1408 257 sleep 0.1 click 1 sleep 0.1 mousemove 351 879 sleep 0.1 click 1 sleep 0.1 key space
 minimise
 
 # Dolphin podcast nobrain
-\dolphin --new-window "$drive/podcast" & disown
+\dolphin --new-window "$drive""/podcast" & disown
 waitstart "Dolphin" 2
 checkkde
 xdotool type "future"
@@ -258,14 +258,14 @@ xdotool sleep 0.1 key Right sleep 0.1 key Down
 maximise; left; minimise
 
 # VLC podcast nobrain
-fix_lang prime-run vlc --play-and-exit --no-random --no-loop --no-repeat $(find "$drive/podcast/misc" "$drive/podcast/detail" "$drive/podcast/neytirix" "$drive/podcast/lateral" "$drive/podcast/carlin" "/home/fabian/videos/e18future" "/home/fabian/videos/h85future2" "/home/fabian/videos/e53castoff" "/home/fabian/videos/h88thought" -type f | sort -u) & disown
+fix_lang prime-run vlc --play-and-exit --no-random --no-loop --no-repeat $(find "$drive""/podcast/misc" "$drive""/podcast/detail" "$drive""/podcast/neytirix" "$drive""/podcast/lateral" "$drive""/podcast/carlin" "/home/fabian/videos/e18future" "/home/fabian/videos/h85future2" "/home/fabian/videos/e53castoff" "/home/fabian/videos/h88thought" -type f | sort -u) & disown
 waitstart "VLC media player" 4
 checkkde; maximise; left
 xdotool sleep 0.1 mousemove 1408 257 sleep 0.1 click 1 sleep 0.1 mousemove 351 879 sleep 0.1 click 1 sleep 0.1 key space sleep 0.1 key Up sleep 0.1 key Up
 minimise
 
 # Dolphin podcast brain
-\dolphin --new-window "$drive/podcast" & disown
+\dolphin --new-window "$drive""/podcast" & disown
 waitstart "Dolphin" 3
 checkkde
 xdotool type "mit"
@@ -273,7 +273,7 @@ xdotool sleep 0.1 key Right sleep 0.1 key Down sleep 0.1 key Right sleep 0.1 key
 maximise; left; minimise
 
 # VLC podcast brain
-fix_lang prime-run vlc --play-and-exit --no-random --no-loop --no-repeat $(find "$drive/podcast/numberphile" "$drive/podcast/ri" "/home/fabian/videos/e66belle" "$drive/podcast/robert_miles" "$drive/podcast/becky" "$drive/podcast/mit" "$drive/podcast/taboo" "$drive/podcast/mai" "$drive/podcast/q217" "/home/fabian/videos/h87frysauce" -type f | sort -u) & disown
+fix_lang prime-run vlc --play-and-exit --no-random --no-loop --no-repeat $(find "$drive""/podcast/numberphile" "$drive""/podcast/ri" "/home/fabian/videos/e66belle" "$drive""/podcast/robert_miles" "$drive""/podcast/becky" "$drive""/podcast/mit" "$drive""/podcast/taboo" "$drive""/podcast/mai" "$drive""/podcast/q217" "/home/fabian/videos/h87frysauce" -type f | sort -u) & disown
 waitstart "VLC media player" 5
 checkkde; maximise; left
 xdotool sleep 0.1 mousemove 1408 257 sleep 0.1 click 1 sleep 0.1 mousemove 351 879 sleep 0.1 click 1 sleep 0.1 key space
