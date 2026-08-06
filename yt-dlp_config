@@ -1,5 +1,6 @@
 # shut up and just work
--q -R 10 --fragment-retries 10 --file-access-retries 10 --extractor-retries 10 --socket-timeout 600 --default-search auto --check-formats --extractor-args "youtube:player-client=default,-tv,web_safari,web_embedded"
+-q -R 10 --fragment-retries 10 --file-access-retries 10 --extractor-retries 10 --socket-timeout 600 --default-search auto --check-formats
+#--extractor-args "youtube:player-client=default,-tv,web_safari,web_embedded"
 --no-warnings
 # playback can begin immediately
 #--downloader ffmpeg --downloader-args "FFMPEG:-v 16 -stats"

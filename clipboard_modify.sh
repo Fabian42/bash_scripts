@@ -19,6 +19,10 @@ while clipnotify; do
    echo -En "$text" | sed "s/\\&(imgrefurl|vet|ved)\\=[^\\&]+//g" | xsel -bi
    echo "edited Google image link"
    sleep 1
+  elif [[ "$text" =~ egs_[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9] ]]; then
+   echo -En "$text" | sed "s/egs\\_/https:\\/\\/www.egscomics.com\\/comic?date=/g" | xsel -bi
+   echo "edited EGS link"
+   sleep 1
 #  elif [[ "$text" == "" ]]; then
 #   echo "$old" | xsel -bi
 #   echo "re-filled clipboard"

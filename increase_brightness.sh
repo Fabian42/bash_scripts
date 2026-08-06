@@ -9,12 +9,7 @@ if((current==-1)); then
  xset dpms force on
  sudo su -c "echo -n 0 > $setting"
  echo -n 0 > $file
-# brightness probably =minimum, definitely <6%
-elif((current<6)); then
- # set brightness to 6%
- sudo su -c "echo -n 6 > $setting"
- echo -n 6 > $file
-# brightness probably =6%, definitely <25%
+# brightness probably =minimum, definitely <25%
 elif((current<25)); then
  # set brightness to 25%
  sudo su -c "echo -n 25 > $setting"

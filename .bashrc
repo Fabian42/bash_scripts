@@ -143,6 +143,7 @@ magic(){
  sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable
  yay -Syy archlinux-keyring manjaro-keyring
  sudo pacman-key --populate archlinux manjaro
+ sudo rm -r /var/cache/pacman/pkg/download-*; 
  echo "y\nn\ny\n" | yay -Scc
  yay -Syyu
  to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//" | tr "\n" " ")
@@ -469,7 +470,7 @@ ff4(){
    end="$(div_time4 "$3")"
   fi
  fi
- ffmpeg -i "$1" $start_prefix $start $end_prefix $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 "a4_$1"
+ ffmpeg -i "$1" $start_prefix $start $end_prefix $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 -map 0:v -map 0:a -map 0:s? -crf 1 -c:s mov_text "a4_$1"
  unset start end
 }
 
@@ -512,12 +513,12 @@ zp(){
   ((size+=$(du -PsB1 "$file" | sed "s/[ \\t].+//")))
  done
  # conditional parameters: split archive into Telegram-compatible files if necessary
- 7z a -mx0 $(if (( size > limit )); then echo "-v""$limit""b"; fi) "$out_name".zip "${files[@]}"
+ 7z a -mx0 $(if (( size > limit )); then echo "-v""$limit""b"; fi) "$out_name"".zip" "${files[@]}"
 }
 # Make a huge image out of text, to see all the details. First argument is text, second can be "order" for the "Kanji stroke orders" font
 render_kanji(){ if [[ "$2" == "order" ]]; then font="/usr/share/fonts/TTF/KanjiStrokeOrders_v4.004.ttf"; else font="/usr/share/fonts/TTF/Cica-Regular.ttf"; fi; convert -monitor -define registry:temporary-path=/home/fabian/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "$font" label:"$1" render_kanji.png;}
 # concatenate videos with identical encoding settings, last argument is output
-concat(){ out="${@:$#:$#}"; files="/tmp/$(date "+%Y-%m-%dT%H:%M:%S")"; touch "$files"; for file in ${@:1:$#-1}; do echo "file '$(readlink -f "$file")'" >> "$files"; done; ffmpeg -f concat -safe 0 -i "$files" -c copy "$out"; rm "$files";}
+concat(){ out="${@:$#:$#}"; files="/tmp/$(date "+%Y-%m-%dT%H:%M:%S")"; touch "$files"; for file in ${@:1:$#-1}; do echo "file '$(readlink -f "$file")'" >> "$files"; done; ffmpeg -f concat -safe 0 -i "$files" -map 0:v -map 0:a -map 0:s -crf 1 -c:a copy -c:s mov_text "$out"; rm "$files";}
 # phone alarm replacement
 alarm(){
  sleep "$((60*$1))" # alarm set in $1 minutes
