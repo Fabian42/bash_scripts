@@ -143,7 +143,7 @@ magic(){
  sudo pacman-mirrors --continent --api --protocols https http ftp --set-branch stable
  yay -Syy archlinux-keyring manjaro-keyring
  sudo pacman-key --populate archlinux manjaro
- sudo rm -r /var/cache/pacman/pkg/download-*; 
+ sudo rm -r /var/cache/pacman/pkg/download-*
  echo "y\nn\ny\n" | yay -Scc
  yay -Syyu
  to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//" | tr "\n" " ")
@@ -281,7 +281,7 @@ alias func="func_assist(){ xdotool type \"a(){ ; }\"; xdotool key Left key Left 
 # create folder, ignore if already exists, create all necessary parent folders, immediately switch to it and list files
 mk(){ mkdir -p "$1"; cd "$1"; path; ls;}
 # "up" goes one folder up, "up n" goes n folders up
-up(){ if [ "$1" == "" ]; then cd ..; else for((a=0;a<$1;a++)) do cd ..; done; fi; path; ls;}
+up(){ if [ "$1" == "" ]; then cd ..; elif [[ "$1" =~ ^[0-9]+$ ]]; then for((a=0;a<$1;a++)) do cd ..; done; else cd ..; c "$1"; fi; path; ls;}
 # go to the previous directory
 back(){ cd "$OLDPWD"; path; ls;}
 # give all permissions to everyone for a file/folder, including subfolders

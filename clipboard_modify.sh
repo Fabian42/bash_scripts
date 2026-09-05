@@ -23,6 +23,14 @@ while clipnotify; do
    echo -En "$text" | sed "s/egs\\_/https:\\/\\/www.egscomics.com\\/comic?date=/g" | xsel -bi
    echo "edited EGS link"
    sleep 1
+  elif [[ "$text" =~ egsnp_[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9] ]]; then
+   echo -En "$text" | sed "s/egsnp\\_/https:\\/\\/www.egscomics.com\\/egsnp?date=/g" | xsel -bi
+   echo "edited EGS:NP link"
+   sleep 1
+  elif [[ "$text" =~ egssb_[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9] ]]; then
+   echo -En "$text" | sed "s/egssb\\_/https:\\/\\/www.egscomics.com\\/sketchbook?date=/g" | xsel -bi
+   echo "edited EGS sketchbook link"
+   sleep 1
 #  elif [[ "$text" == "" ]]; then
 #   echo "$old" | xsel -bi
 #   echo "re-filled clipboard"

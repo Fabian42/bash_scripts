@@ -1,21 +1,21 @@
 #!/bin/bash
 source /home/fabian/d/programs/bash_scripts/sane
-if [[ "$1" =~ ^[0-9]+" "?[KkMmGgTt]?i?[Bb]?$ ]]; then
+if [[ "$1" =~ ^[0-9]+("."[0-9]+)?" "?[KkMmGgTt]?i?[Bb]?$ ]]; then
  if [[ "$1" =~ i ]]; then factor=1024; else factor=1000; fi
- size="$(echo "$1" | grep -o "[0-9]+")"
+ size="$(echo "$1" | grep -o "[0-9]\+\(\\.[0-9]\+\)\?")"
  if [[ "$1" =~ [Kk] ]]; then
-  echo $((size*factor))
+  echo "$size*$factor" | bc
  elif [[ "$1" =~ [Mm] ]]; then
-  echo $((size*factor**2))
+  echo "$size*$factor^2" | bc
  elif [[ "$1" =~ [Gg] ]]; then
-  echo $((size*factor**3))
+  echo "$size*$factor^3" | bc
  elif [[ "$1" =~ [Tt] ]]; then
-  echo $((size*factor**4))
+  echo "$size*$factor^4" | bc
  else
   echo "$size"
- fi
- return
+ fi | sed "s/\\..+//" # floor
+ exit
 else
  echo "Cannot parse input as file size." >&2
- return 1
+ exit 1
 fi
