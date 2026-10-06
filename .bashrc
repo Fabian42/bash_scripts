@@ -765,4 +765,3 @@ alias unswap="sudo swapoff -a; sudo swapon -a"
 
 ## output uptime and boot time on console start (and for some reason randomly during package installations)
 if [[ $- == *i* ]]; then echo "$(uptime -p) since $(uptime -s), time: $(date "+%H:%M:%S")"; fi
-#temp
