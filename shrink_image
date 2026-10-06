@@ -26,7 +26,6 @@ ext="${file#*.}"
 for f in {2..1000}; do
  echo "factor: ""$f"
  out="$name""_""$f"".""$ext"
- echo "x=$x, f=$f, y=$y"
  magick "$file" -resize "$((x/f))x$((y/f))" "$out"
  size="$(stat --printf="%s" -- "$out")"
  echo "size: ""$size"

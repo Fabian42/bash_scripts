@@ -152,6 +152,7 @@ magic(){
  echo "FILE ISSUES:"
  search "\\.pacnew"
  search "\\.pacsave"
+ search "\\.pacorig"
 }
 # only the cleaning part of the above
 alias space="sudo rm -r /var/cache/pacman/pkg/download-*; echo \"y\nn\ny\n\" | yay -Scc"
@@ -470,7 +471,7 @@ ff4(){
    end="$(div_time4 "$3")"
   fi
  fi
- ffmpeg -i "$1" $start_prefix $start $end_prefix $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 -map 0:v -map 0:a -map 0:s? -crf 1 -c:s mov_text "a4_$1"
+ ffmpeg -i "$1" $start_prefix $start $end_prefix $end -vf "setpts=PTS/4" -af "atempo=2,atempo=2" -map_metadata -1 -map_chapters -1 -map 0:v? -map 0:a? -map 0:s? -crf 1 -c:s mov_text "a4_$1"
  unset start end
 }
 
