@@ -145,6 +145,7 @@ magic(){
  sudo pacman-key --populate archlinux manjaro
  sudo rm -r /var/cache/pacman/pkg/download-*
  echo "y\nn\ny\n" | yay -Scc
+ pipx upgrade-all
  yay -Syyu
  to_rebuild=$(checkrebuild | sed "s/[^\\t]+\\t//" | tr "\n" " ")
  echo "REBUILDING: $to_rebuild"
@@ -159,7 +160,7 @@ alias space="sudo rm -r /var/cache/pacman/pkg/download-*; echo \"y\nn\ny\n\" | y
 # fix iMage "unable to write pixel cache" on large images
 export TMPDIR="/var/tmp"
 # restart KDE and KDE connect
-alias kde="echo \"killing KDE…\"; killall -s SIGKILL plasmashell; waitfor plasmashell; echo \"restarting KDE…\"; kstart5 plasmashell & disown"
+alias kde="killall -s SIGKILL plasmashell; sleep 1; notify-send \"manual sleep block\""
 # restart the window manager when the Windows key doesn't open the start menu
 alias win="kwin_x11 --replace &> /dev/null & disown; exit"
 # grep ignores case and knows regex, also another copy of "stray backslash" suppression from "sane", required against conflicts between sane and .bashrc
@@ -294,6 +295,11 @@ export CDPATH=".:/home/fabian:$drive"
 c(){
  if [[ "$1" == "" ]]; then
   cd ~ # restore ~ switching without arguments, which is broken by CDPATH containing "."
+  path
+  ls
+  return
+ elif [[ "$1" == "/" ]]; then
+  cd / # splitting on slash breaks switching to root, so restore that functionality
   path
   ls
   return
@@ -514,7 +520,7 @@ zp(){
   ((size+=$(du -PsB1 "$file" | sed "s/[ \\t].+//")))
  done
  # conditional parameters: split archive into Telegram-compatible files if necessary
- 7z a -mx0 $(if (( size > limit )); then echo "-v""$limit""b"; fi) "$out_name"".zip" "${files[@]}"
+ 7z a -mx0 -snl $(if (( size > limit )); then echo "-v""$limit""b"; fi) "$out_name"".zip" "${files[@]}"
 }
 # Make a huge image out of text, to see all the details. First argument is text, second can be "order" for the "Kanji stroke orders" font
 render_kanji(){ if [[ "$2" == "order" ]]; then font="/usr/share/fonts/TTF/KanjiStrokeOrders_v4.004.ttf"; else font="/usr/share/fonts/TTF/Cica-Regular.ttf"; fi; convert -monitor -define registry:temporary-path=/home/fabian/temp -limit memory 8gb -background black -fill white -pointsize 4096 -font "$font" label:"$1" render_kanji.png;}
@@ -542,8 +548,8 @@ alarm(){
 search(){ sudo find / -iwholename "*$1*" 2> /dev/null | sort | grep -i -- "$1";}
 # same as above, but only in the current folder and subfolders and not as root and not hiding errors
 here(){ if [[ "$1" == "" ]]; then find . | sort; else find . -regextype grep -iwholename "*$1*" | sort | grep -i -- "$1"; fi; }
-# same as above, but as root
-shere(){ sudo find . -iwholename "*$1*" | grep -i -- "$1";}
+# same as above, but as root and without following symlinks
+shere(){ sudo find -P . -iwholename "*$1*" | grep -i -- "$1";}
 # trash all files for search term
 delhere(){ nl; del $(here "$1");}
 # Play all tracks from my music collection randomly with VLC that match the search terms and close the console. If no search term is entered, randomise the entire collection, but not a0.
@@ -560,7 +566,7 @@ p(){
 ## Minecraft
 # get a window ID for a multiplayer Minecraft window
 mc(){
- for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティーのサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)")$(xdotool search --name "FaRo[13] on SL"); do
+ for id in $(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- マルチプレイ\\（サードパーティー製のサーバー\\）")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Multiplayer \\(3rd\\-party [Ss]erver\\)")$(xdotool search --name "Minecraft\\* [0-9\\.]+ \\- Playing with yer mates \\(3rd\\-party [Ii]sland\\)")$(xdotool search --name "FaRo[13] on SL"); do
   if [[ ! "$(xdotool getwindowname "$id")" =~ .*CopyQ.* ]]; then
    echo "$id"
   fi
@@ -713,7 +719,7 @@ un(){ sudo pacman -Rn $(pack_by_command $*);}
 #fixdiscord(){ cd /home/fabian/.config/discord; version="$(ls -1 | grep "^0\\.0\\.")"; mv "$version" "0.0.$(($(echo "$version" | sed "s/0\\.0\\.//")+1))"; un openasar-git; yay -S discord; yay -S openasar-git;}
 # package history
 pachist_helper(){ cat /var/log/pacman.log | grep -e "\\[ALPM\\] installed" -e "\\[ALPM\\] upgraded" -e "\\[ALPM\\] removed" -e "\\[ALPM\\] reinstalled" | grep -v -e yuzu-mainline-bin -e geckodriver-hg -e themix-icons-papirus-git | sed "s/ \\[ALPM\\]//";}
-pachist(){ if [[ "$1" == "" ]]; then pachist_helper | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else pachist_helper | grep "$1" | tail -n 100 | grep "$1"; fi;}
+pachist(){ if [[ "$1" == "" ]]; then pachist_helper | tail -n 1000 | grep -P " (installed|upgraded|removed|reinstalled) \K[A-Za-z0-9\\_\\-]+"; else for arg in "$@"; do pachist_helper | grep "$arg" | tail -n 100 | grep "$arg"; done; fi;}
 # list not installed optional dependencies
 listopt(){ for pack in $(pacman -Q | sed "s/ .+//"); do out=$(pacman -Qi "$pack" | sed -n -e "/optional dep/I,/required by/Ip" | head -n -1 | grep -v " \\[installed\\]" | sed "s/^optional dep[a-z]+ +\\://I" | sed "s/^ +//"); if [[ "$out" != "" && "$out" != "None" ]]; then echo "\n$pack:\n$out"; fi; done;}
 
